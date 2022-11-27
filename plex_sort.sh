@@ -23,8 +23,19 @@ source $HOME/.config/plex_sort/plex_sort.conf
 if curl -s -m 3 --head --request GET https://github.com > /dev/null; then 
   remote_md5=`curl -s https://raw.githubusercontent.com/scoony/plex_sort/main/plex_sort.sh | md5sum | cut -f1 -d" "`
   local_md5=`md5sum $0 | cut -f1 -d" "`
-  echo "Remote: $remote_md5"
-  echo "Local: $local_md5"
+##  echo "Remote: $remote_md5"
+##  echo "Local: $local_md5"
+  if [[ "$remote_md5" != "$local_md5" ]]; then
+    echo "Update Available"
+    echo "---"
+    function script_upgrade {
+      wget --quiet https://raw.githubusercontent.com/scoony/plex_sort/main/plex_sort.sh -O /opt/scripts/plex_sort.sh
+      chmod +x /opt/scripts/plex_sort.sh
+      echo "Update Completed, restart script"
+      exit 1
+    }
+    script_upgrade
+  fi
 else
   echo "GITHUB unreachable no update."
   echo ""
