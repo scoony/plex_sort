@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-## Generate conf
+## Generate conf and/or load conf
 if [[ ! -d ~/.config/plex_sort ]]; then
   mkdir -p ~/.config/plex_sort
   my_config="$HOME/.config/plex_sort/plex_sort.conf"
@@ -23,8 +23,6 @@ source $HOME/.config/plex_sort/plex_sort.conf
 if curl -s -m 3 --head --request GET https://github.com > /dev/null; then 
   remote_md5=`curl -s https://raw.githubusercontent.com/scoony/plex_sort/main/plex_sort.sh | md5sum | cut -f1 -d" "`
   local_md5=`md5sum $0 | cut -f1 -d" "`
-##  echo "Remote: $remote_md5"
-##  echo "Local: $local_md5"
   if [[ "$remote_md5" != "$local_md5" ]]; then
     echo "Update Available"
     echo "---"
@@ -47,8 +45,6 @@ fi
 plex_folders=`ls -d $mount_folder/*/$plex_folder/`
 for plex_path in $plex_folders ; do
   if [[ ! "$exclude_folders" =~ "$plex_path" ]]; then
-##    echo "----"
-##    echo "Plex Storage: $plex_path"
     plex_path_free=`df -k --output=avail "$plex_path" | tail -n1`
     plex_path_free_human=`df -kh --output=avail "$plex_path" | tail -n1`
     echo "Plex folder: $plex_path (free: $plex_path_free_human)"
