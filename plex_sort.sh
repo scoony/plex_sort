@@ -21,9 +21,10 @@ source $HOME/.config/plex_sort/plex_sort.conf
 
 ## Update process
 if curl -s -m 3 --head --request GET https://github.com > /dev/null; then 
-  remote_md5=`curl -s https://raw.githubusercontent.com/scoony/conky-nas/main/extras/update-files | md5sum | cut -f1 -d" "`
+  remote_md5=`curl -s https://raw.githubusercontent.com/scoony/plex_sort/main/plex_sort.sh | md5sum | cut -f1 -d" "`
   local_md5=`md5sum $0 | cut -f1 -d" "`
-  echo "$local_md5"
+  echo "Remote: $remote_md5"
+  echo "Local: $local_md5"
 else
   echo "GITHUB unreachable no update."
   echo ""
