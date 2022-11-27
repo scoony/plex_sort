@@ -32,7 +32,8 @@ if curl -s -m 3 --head --request GET https://github.com > /dev/null; then
       wget --quiet https://raw.githubusercontent.com/scoony/plex_sort/main/plex_sort.sh -O /opt/scripts/plex_sort.sh
       chmod +x /opt/scripts/plex_sort.sh
       echo "Update Completed, restart script"
-      trap 'bash $0' 1
+## Bonne approche mais fonctionne pas
+##      trap 'bash $0' 1
       exit 1
     }
     script_upgrade
