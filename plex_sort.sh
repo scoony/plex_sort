@@ -1,6 +1,7 @@
 #!/bin/bash
 
 ## LOG FOLDER missing
+## IF New download folder and no target skip
 
 ## Check if this script is running
 check_dupe=$(ps -ef | grep "$0" | grep -v grep | wc -l | xargs)
@@ -196,25 +197,29 @@ for folder in $filebot_folders ; do
   source_folder_path=`echo $download_folder"/"$folder`
   target_conf=${!folder}
   echo -e "$ui_tag_ok Source: $folder - Target: $target_conf"
-  target_folder_path=`echo $best_plex_target""$target_conf`
-  echo -e "$ui_tag_ok Content destination: $target_folder_path"
-  if [[ "${folder,,}" =~ "film" ]] || [[ "${folder,,}" =~ "movie" ]]; then
-    agent="TheMovieDB"
-    format="movieFormat"
-    output="{n} ({y})"
+  if [[ "$target_conf" == "" ]]; then
+    echo -e "No config provided"
   else
-    agent="TheTVDB"
-    format="seriesFormat"
-    output="{n}/{'$filebot_season_folder '+s.pad(2)}/{n} - {sxe} - {t}"
+    target_folder_path=`echo $best_plex_target""$target_conf`
+    echo -e "$ui_tag_ok Content destination: $target_folder_path"
+    if [[ "${folder,,}" =~ "film" ]] || [[ "${folder,,}" =~ "movie" ]]; then
+      agent="TheMovieDB"
+      format="movieFormat"
+      output="{n} ({y})"
+    else
+      agent="TheTVDB"
+      format="seriesFormat"
+      output="{n}/{'$filebot_season_folder '+s.pad(2)}/{n} - {sxe} - {t}"
+    fi
+    echo -e "$ui_tag_ok Agent used: $agent"
+    folder_files=`find "$source_folder_path" -type f -iname '*[avi|mp4|mkv]' > $log_folder/$folder.medias.log`
+    check_medias=`cat $log_folder/$folder.medias.log`
+    if [[ "$check_medias" != "" ]]; then
+      filebot -script fn:amc -non-strict --conflict override --lang $filebot_language --encoding UTF-8 --action move "$source_folder_path" --def "$format=$output" --output "$target_folder_path"
+      new_media="1"
+    fi
+    echo ""
   fi
-  echo -e "$ui_tag_ok Agent used: $agent"
-  folder_files=`find "$source_folder_path" -type f -iname '*[avi|mp4|mkv]' > $log_folder/$folder.medias.log`
-  check_medias=`cat $log_folder/$folder.medias.log`
-  if [[ "$check_medias" != "" ]]; then
-    filebot -script fn:amc -non-strict --conflict override --lang $filebot_language --encoding UTF-8 --action move "$source_folder_path" --def "$format=$output" --output "$target_folder_path"
-    new_media="1"
-  fi
-  echo ""
 done
 
 if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo" == "1" ]]; then
