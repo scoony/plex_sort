@@ -10,7 +10,7 @@ This script can be used without Plex, it store your medias for you automatically
 - [x] detect download folders ("filebot" in folder name)
 - [x] detect best drive (according to free space)
 - [x] rename and move media properly
-- [ ] update Plex library
+- [x] update Plex library
 - [ ] check dupes
 - [ ] auto-clean download folders
 - [ ] send push messages
