@@ -21,6 +21,26 @@ if [[ ! -d ~/.config/plex_sort ]]; then
 fi
 source $HOME/.config/plex_sort/plex_sort.conf
 
+## Install / Check dependencies
+my_dependencies="filebot curl wget awk"
+for dependency in $my_dependencies ; do
+  if $dependency -help > /dev/null 2&>1 ; then
+    echo "Dependency ok: $dependency"
+  else
+    echo "Dependency missing: $dependency"
+    echo "Trying to install..."
+    apt install $dependency -y
+    if $dependency -help > /dev/null 2&>1 ; then
+      echo "Dependency ok: $dependency"
+    else
+      echo "Dependency missing: $dependency"
+      echo "Manual install required..."
+      exit 1
+    fi
+  fi
+done
+echo ""
+
 ## Update process
 if curl -s -m 3 --head --request GET https://github.com > /dev/null; then 
   remote_md5=`curl -s https://raw.githubusercontent.com/scoony/plex_sort/main/plex_sort.sh | md5sum | cut -f1 -d" "`
