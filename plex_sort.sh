@@ -1,7 +1,6 @@
 #!/bin/bash
 
 ## LOG FOLDER missing
-## Native sudo (donc utilisé par root direct)
 
 ## Check if this script is running
 check_dupe=$(ps -ef | grep "$0" | grep -v grep | wc -l | xargs)
