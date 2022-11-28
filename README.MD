@@ -5,7 +5,7 @@ This script is designed to handle downloads, rename and store properly...
 This script can be used without Plex, it store your medias for you automatically.
 
 ## Features
-- auto-install filebot licence if in the computer
+- auto-install filebot licence if file in the computer
 - auto-update (no need to git pull or git clone)
 - detect download folders ("filebot" in folder name)
 - detect best drive (according to free space)
