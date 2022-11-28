@@ -1,6 +1,7 @@
 #!/bin/bash
 
 ## LOG FOLDER missing
+## Native sudo (donc utilisé par root direct)
 
 ## Check if this script is running
 check_dupe=$(ps -ef | grep "$0" | grep -v grep | wc -l | xargs)
@@ -22,8 +23,8 @@ source $HOME/.config/plex_sort/plex_sort.conf
 ## Check if root for extra features
 printf  "\e[44m\u2263\u2263  \e[0m \e[44m \e[1m %-62s  \e[0m \e[44m  \e[0m \e[44m \e[0m \e[34m\u2759\e[0m\n" "Check account used"
 if [[ "$EUID" == "0" ]] || [[ "$sudo" != "" ]]; then
-  root_feature="on"
   echo -e "$ui_tag_ok Root account used"
+  native_sudo="1"
   echo ""
 else
   if [[ ! -f $log_folder/.no-root ]] && [[ "$sudo" == "" ]]; then
@@ -216,7 +217,7 @@ for folder in $filebot_folders ; do
   echo ""
 done
 
-if [[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]; then
+if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo" == "1"]]; then
   ## Plex Update library
   printf  "\e[44m\u2263\u2263  \e[0m \e[44m \e[1m %-62s  \e[0m \e[44m  \e[0m \e[44m \e[0m \e[34m\u2759\e[0m\n" "Update Plex library"
   if [[ "$plex_token" == "" ]] || [[ "$plex_port" == "" ]]; then
