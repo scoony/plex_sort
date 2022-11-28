@@ -5,11 +5,17 @@ This script is designed to handle downloads, rename and store properly...
 This script can be used without Plex, it store your medias for you automatically.
 
 ## Features
-- auto-install filebot licence if file in the computer
-- auto-update (no need to git pull or git clone)
-- detect download folders ("filebot" in folder name)
-- detect best drive (according to free space)
-- rename and move media properly
+- [x] auto-install filebot licence if file in the computer
+- [x] auto-update (no need to git pull or git clone)
+- [x] detect download folders ("filebot" in folder name)
+- [x] detect best drive (according to free space)
+- [x] rename and move media properly
+- [ ] update Plex library
+- [ ] check dupes
+- [ ] auto-clean download folders
+- [ ] send push messages
+- [ ] send mails
+- [ ] root features thru sudo or root cron
 
 ## Features for root only
 - chmod source folders
@@ -29,3 +35,4 @@ This script can be used without Plex, it store your medias for you automatically
 - run it
 - edit config (~/.config/plex_sort/plex_sort.conf)
 - add it to cron
+
