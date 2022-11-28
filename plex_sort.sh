@@ -10,6 +10,8 @@ if [[ ! -d ~/.config/plex_sort ]]; then
   echo "plex_folder=\"\"" >> $my_config
   echo "download_folder=\"\"" >> $my_config
   echo "exclude_folder=\"\"" >> $my_config
+  echo "filebot_language=\"\" ## \"en\" in english, \"fr\" in french" >> $my_config
+  echo "filebot_season_folder=\"\" ## \"Season\" in english, \"Saison\" in french" >> $my_config
   echo "log_folder=\"\"" >> $my_config
   echo "" >> $my_config
   filebot_folders=`ls "$download_folder" | grep -i "filebot"`
@@ -74,3 +76,24 @@ rm $log_folder/temp.log
 echo ""
 echo "Space required to store content: $space_required_human"
 
+## Here we go
+for folder in $filebot_folders ; do
+  source_folder_path=`echo $download_folder"/"$folder`
+  target_conf=${!folder}
+  echo ""
+  echo "Source: $folder - Target: $target_conf"
+  target_folder_path=`echo $best_plex_target""$target_conf`
+  echo "Content destination: $target_folder_path"
+  if [[ "${folder,,}" =~ "film" ]] || [[ "${folder,,}" =~ "movie" ]]; then
+    agent="TheMovieDB"
+    format="movieFormat"
+    output="{n} ({y})"
+  else
+    agent="TheTVDB"
+    format="seriesFormat"
+    output="{n}/{'$filebot_season_folder '+s.pad(2)}/{n} - {sxe} - {t}"
+  fi
+  echo "Agent used: $agent"
+  folder_files=`find "$folder_path" -type f -iname '*[avi|mp4|mkv]' > $log_folder/$folder.medias.log`
+  ##filebot -script fn:amc -non-strict --conflict override --lang $filebot_language --encoding UTF-8 --action move "$folder_path" --def "$format=$output" --output "$target_folder_path"
+done
