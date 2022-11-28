@@ -1,5 +1,11 @@
 #!/bin/bash
 
+## Check if this script is running
+check_dupe=$(ps -ef | grep "$0" | grep -v grep | wc -l | xargs)
+if [[ "$check_dupe" > "2" ]]; then
+  echo "Script already running"
+  exit 1
+fi
 
 ## Generate conf and/or load conf
 if [[ ! -d ~/.config/plex_sort ]]; then
@@ -22,6 +28,7 @@ fi
 source $HOME/.config/plex_sort/plex_sort.conf
 
 ## Install / Check dependencies
+printf  "\e[44m\u2263\u2263  \e[0m \e[44m \e[1m %-62s  \e[0m \e[44m  \e[0m \e[44m \e[0m \e[34m\u2759\e[0m\n" "Install / Check dependencies"
 my_dependencies="filebot curl wget awk"
 for dependency in $my_dependencies ; do
   if $dependency -help > /dev/null 2>/dev/null ; then
@@ -39,8 +46,10 @@ for dependency in $my_dependencies ; do
     fi
   fi
 done
+echo ""
 
 ## Check FileBot Licence
+printf  "\e[44m\u2263\u2263  \e[0m \e[44m \e[1m %-62s  \e[0m \e[44m  \e[0m \e[44m \e[0m \e[34m\u2759\e[0m\n" "Check FileBot licence"
 if [[ ! -f $log_folder/.licence ]]; then
   echo ""
   check_local_licence=`filebot -script fn:sysinfo script | grep "Valid-Until"`
@@ -48,9 +57,11 @@ if [[ ! -f $log_folder/.licence ]]; then
     locate_filebot_licence=`locate -ir "filebot*.*.psm$"`
     for licence in $locate_filebot_licence ; do
       filebot_licence_validity=`cat $locate_filebot_licence | grep "Valid-Until" | awk '{ print $2 }'`
-      ## prévoir au cas où plusieurs licences
-      filebot --license $licence
+      echo "$filebot_licence_validity $locate_filebot_licence" >> $log_folder/licences-choice.log     
     done
+    licence_final=`sort $log_folder/licences-choice.log | tail -n1 | awk '{ print $2 }'`
+    filebot --license $licence_final
+    ## une petite vérification 
   else
     touch $log_folder/.licence
     echo $check_local_licence > $log_folder/.licence
@@ -62,6 +73,7 @@ else
 fi
 
 ## Update process
+printf  "\e[44m\u2263\u2263  \e[0m \e[44m \e[1m %-62s  \e[0m \e[44m  \e[0m \e[44m \e[0m \e[34m\u2759\e[0m\n" "Check script update"
 if curl -s -m 3 --head --request GET https://github.com > /dev/null; then 
   remote_md5=`curl -s https://raw.githubusercontent.com/scoony/plex_sort/main/plex_sort.sh | md5sum | cut -f1 -d" "`
   local_md5=`md5sum $0 | cut -f1 -d" "`
@@ -84,6 +96,7 @@ else
 fi
 
 ## Detect Plex folders and select best target
+printf  "\e[44m\u2263\u2263  \e[0m \e[44m \e[1m %-62s  \e[0m \e[44m  \e[0m \e[44m \e[0m \e[34m\u2759\e[0m\n" "Detect Plex folders"
 plex_folders=`ls -d $mount_folder/*/$plex_folder/`
 for plex_path in $plex_folders ; do
   if [[ ! "$exclude_folders" =~ "$plex_path" ]]; then
@@ -102,25 +115,35 @@ echo "Best target: $best_plex_target ($best_free )"
 echo ""
 
 ## Detect download folders and space required
+printf  "\e[44m\u2263\u2263  \e[0m \e[44m \e[1m %-62s  \e[0m \e[44m  \e[0m \e[44m \e[0m \e[34m\u2759\e[0m\n" "Detect download folders"
 filebot_folders=`ls "$download_folder" | grep -i "filebot"`
 for folder in $filebot_folders ; do
   echo "Folder: $folder"
   folder_path=`echo $download_folder"/"$folder`
   echo "Path: $folder_path"
+  check_conf=`cat $log_folder/plex_sort.conf | grep "$folder"`
+  if [[ "$check_conf" != "" ]]; then
+    echo "Config setting: $check_conf"
+  else
+    echo $folder"=\"\"" >> $my_config
+    echo "Config updated..."
+  fi
   folder_usage=`du -s "$folder_path" 2>/dev/null | awk '{ print $1 }'`
   echo $folder_usage >> $log_folder/temp.log
+  echo ""
 done
 space_required=`cat $log_folder/temp.log | paste -sd+ - | bc`
 space_required_human=`cat $log_folder/temp.log | paste -sd+ - | bc | numfmt --to=iec --from-unit=K`
 rm $log_folder/temp.log
 echo ""
 echo "Space required to store content: $space_required_human"
+echo ""
 
 ## Here we go
+printf  "\e[44m\u2263\u2263  \e[0m \e[44m \e[1m %-62s  \e[0m \e[44m  \e[0m \e[44m \e[0m \e[34m\u2759\e[0m\n" "Sorting process"
 for folder in $filebot_folders ; do
   source_folder_path=`echo $download_folder"/"$folder`
   target_conf=${!folder}
-  echo ""
   echo "Source: $folder - Target: $target_conf"
   target_folder_path=`echo $best_plex_target""$target_conf`
   echo "Content destination: $target_folder_path"
@@ -139,4 +162,5 @@ for folder in $filebot_folders ; do
   if [[ "$check_medias" != "" ]]; then
     filebot -script fn:amc -non-strict --conflict override --lang $filebot_language --encoding UTF-8 --action move "$source_folder_path" --def "$format=$output" --output "$target_folder_path"
   fi
+  echo ""
 done
