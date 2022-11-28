@@ -7,6 +7,21 @@ if [[ "$check_dupe" > "2" ]]; then
   exit 1
 fi
 
+## UI Design
+ui_tag_ok="[\e[42m \u2713 \e[0m]"
+ui_tag_bad="[\e[41m \u2713 \e[0m]"
+
+## Check if root for extra features
+printf  "\e[44m\u2263\u2263  \e[0m \e[44m \e[1m %-62s  \e[0m \e[44m  \e[0m \e[44m \e[0m \e[34m\u2759\e[0m\n" "Check account used"
+if [[ "$EUID" == "0" ]]; then
+  root_feature="on"
+  echo -e "$ui_tag_ok Root account used"
+  echo ""
+else
+  echo -e "$ui_tag_bad Some optional features are disabled (not root)"
+  echo ""
+fi
+
 ## Generate conf and/or load conf
 if [[ ! -d ~/.config/plex_sort ]]; then
   mkdir -p ~/.config/plex_sort
@@ -32,16 +47,16 @@ printf  "\e[44m\u2263\u2263  \e[0m \e[44m \e[1m %-62s  \e[0m \e[44m  \e[0m \e[44
 my_dependencies="filebot curl wget awk"
 for dependency in $my_dependencies ; do
   if $dependency -help > /dev/null 2>/dev/null ; then
-    echo "Dependency ok: $dependency"
+    echo -e "$ui_tag_ok Dependency: $dependency"
   else
-    echo "Dependency missing: $dependency"
-    echo "Trying to install..."
+    echo -e "$ui_tag_bad Dependency missing: $dependency"
+    echo "... trying to install..."
     apt install $dependency -y 2>/dev/null
     if $dependency -help > /dev/null 2>/dev/null ; then
-      echo "Dependency ok: $dependency"
+      echo -e "$ui_tag_ok Dependency: $dependency"
     else
-      echo "Dependency missing: $dependency"
-      echo "Manual install required..."
+      echo -e "$ui_tag_bad Dependency missing: $dependency"
+      echo -e "... manual install required..."
       exit 1
     fi
   fi
@@ -68,32 +83,44 @@ if [[ ! -f $log_folder/.licence ]]; then
   fi
 else
   filebot_date=`cat $log_folder/.licence | awk 'END {print $NF}'`
-  echo "Filebot is activated ($filebot_date"
+  echo -e "$ui_tag_ok Filebot is activated ($filebot_date"
   echo ""
 fi
 
-## Update process
-printf  "\e[44m\u2263\u2263  \e[0m \e[44m \e[1m %-62s  \e[0m \e[44m  \e[0m \e[44m \e[0m \e[34m\u2759\e[0m\n" "Check script update"
+## Update and check web
+printf  "\e[44m\u2263\u2263  \e[0m \e[44m \e[1m %-62s  \e[0m \e[44m  \e[0m \e[44m \e[0m \e[34m\u2759\e[0m\n" "Internet availability and Update"
 if curl -s -m 3 --head --request GET https://github.com > /dev/null; then 
   remote_md5=`curl -s https://raw.githubusercontent.com/scoony/plex_sort/main/plex_sort.sh | md5sum | cut -f1 -d" "`
   local_md5=`md5sum $0 | cut -f1 -d" "`
   if [[ "$remote_md5" != "$local_md5" ]]; then
-    echo "Update Available"
-    echo "---"
+    echo -e "$ui_tag_bad Update Available"
+    echo "... ---"
     function script_upgrade {
       wget --quiet https://raw.githubusercontent.com/scoony/plex_sort/main/plex_sort.sh -O /opt/scripts/plex_sort.sh
       chmod +x /opt/scripts/plex_sort.sh
-      echo "Update Completed, restart script"
+      echo -e "$ui_tag_ok Update Completed, restart script"
 ## Bonne approche mais fonctionne pas
 ##      trap 'bash $0' 1
       exit 1
     }
     script_upgrade
+  else
+    echo -e "$ui_tag_ok Script up to date."
   fi
 else
-  echo "GitHub unreachable no update."
-  echo ""
+  echo -e "$ui_tag_bad GitHub unreachable no update."
 fi
+if curl -s -m 3 --head --request GET https://www.thetvdb.com > /dev/null; then
+  echo -e "$ui_tag_ok TheTVDB is online."
+else
+  echo -e "$ui_tag_bad TheTVDB unreachable."
+fi
+if curl -s -m 3 --head --request GET https://www themoviedb.org.com > /dev/null; then
+  echo -e "$ui_tag_ok TheMovieDB is online."
+else
+  echo -e "$ui_tag_bad TheMovieDB unreachable."
+fi
+echo ""
 
 ## Detect Plex folders and select best target
 printf  "\e[44m\u2263\u2263  \e[0m \e[44m \e[1m %-62s  \e[0m \e[44m  \e[0m \e[44m \e[0m \e[34m\u2759\e[0m\n" "Detect Plex folders"
@@ -102,7 +129,7 @@ for plex_path in $plex_folders ; do
   if [[ ! "$exclude_folders" =~ "$plex_path" ]]; then
     plex_path_free=`df -k --output=avail "$plex_path" | tail -n1`
     plex_path_free_human=`df -kh --output=avail "$plex_path" | tail -n1`
-    echo "Plex folder: $plex_path (free: $plex_path_free_human)"
+    echo -e "$ui_tag_ok Plex folder: $plex_path (free: $plex_path_free_human)"
     echo "$plex_path_free $plex_path" >> $log_folder/temp.log
 ##    echo ""
   fi
@@ -111,22 +138,23 @@ best_plex_target=`sort -n $log_folder/temp.log | awk 'END {print $NF}'`
 rm $log_folder/temp.log
 best_free=`df -kh --output=avail "$best_plex_target" | tail -n1`
 echo ""
-echo "Best target: $best_plex_target ($best_free )"
+echo -e "$ui_tag_ok Best target: $best_plex_target ($best_free )"
 echo ""
 
 ## Detect download folders and space required
 printf  "\e[44m\u2263\u2263  \e[0m \e[44m \e[1m %-62s  \e[0m \e[44m  \e[0m \e[44m \e[0m \e[34m\u2759\e[0m\n" "Detect download folders"
 filebot_folders=`ls "$download_folder" | grep -i "filebot"`
 for folder in $filebot_folders ; do
-  echo "Folder: $folder"
+  echo -e "$ui_tag_ok Folder: $folder"
   folder_path=`echo $download_folder"/"$folder`
-  echo "Path: $folder_path"
+  echo -e "$ui_tag_ok Path: $folder_path"
   check_conf=`cat $log_folder/plex_sort.conf | grep "$folder"`
   if [[ "$check_conf" != "" ]]; then
-    echo "Config setting: $check_conf"
+    echo -e "$ui_tag_ok Config setting: $check_conf"
   else
+    echo -e "$ui_tag_bad Folder missing in config"
     echo $folder"=\"\"" >> $my_config
-    echo "Config updated..."
+    echo -e "$ui_tag_ok Config updated..."
   fi
   folder_usage=`du -s "$folder_path" 2>/dev/null | awk '{ print $1 }'`
   echo $folder_usage >> $log_folder/temp.log
@@ -136,7 +164,7 @@ space_required=`cat $log_folder/temp.log | paste -sd+ - | bc`
 space_required_human=`cat $log_folder/temp.log | paste -sd+ - | bc | numfmt --to=iec --from-unit=K`
 rm $log_folder/temp.log
 echo ""
-echo "Space required to store content: $space_required_human"
+echo -e "$ui_tag_ok Space required to store content: $space_required_human"
 echo ""
 
 ## Here we go
@@ -144,9 +172,9 @@ printf  "\e[44m\u2263\u2263  \e[0m \e[44m \e[1m %-62s  \e[0m \e[44m  \e[0m \e[44
 for folder in $filebot_folders ; do
   source_folder_path=`echo $download_folder"/"$folder`
   target_conf=${!folder}
-  echo "Source: $folder - Target: $target_conf"
+  echo -e "$ui_tag_ok Source: $folder - Target: $target_conf"
   target_folder_path=`echo $best_plex_target""$target_conf`
-  echo "Content destination: $target_folder_path"
+  echo -e "$ui_tag_ok Content destination: $target_folder_path"
   if [[ "${folder,,}" =~ "film" ]] || [[ "${folder,,}" =~ "movie" ]]; then
     agent="TheMovieDB"
     format="movieFormat"
@@ -156,7 +184,7 @@ for folder in $filebot_folders ; do
     format="seriesFormat"
     output="{n}/{'$filebot_season_folder '+s.pad(2)}/{n} - {sxe} - {t}"
   fi
-  echo "Agent used: $agent"
+  echo -e "$ui_tag_ok Agent used: $agent"
   folder_files=`find "$source_folder_path" -type f -iname '*[avi|mp4|mkv]' > $log_folder/$folder.medias.log`
   check_medias=`cat $log_folder/$folder.medias.log`
   if [[ "$check_medias" != "" ]]; then
