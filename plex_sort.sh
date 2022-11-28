@@ -1,5 +1,7 @@
 #!/bin/bash
 
+## LOG FOLDER missing
+
 ## Check if this script is running
 check_dupe=$(ps -ef | grep "$0" | grep -v grep | wc -l | xargs)
 if [[ "$check_dupe" > "2" ]]; then
@@ -13,21 +15,36 @@ ui_tag_bad="[\e[41m \u2713 \e[0m]"
 ui_tag_warning="[\e[43m \u2713 \e[0m]"
 ui_tag_root="[\e[47m \u2713 \e[0m]"
 
+my_config="$HOME/.config/plex_sort/plex_sort.conf"
+source $HOME/.config/plex_sort/plex_sort.conf
+
+
 ## Check if root for extra features
 printf  "\e[44m\u2263\u2263  \e[0m \e[44m \e[1m %-62s  \e[0m \e[44m  \e[0m \e[44m \e[0m \e[34m\u2759\e[0m\n" "Check account used"
-if [[ "$EUID" == "0" ]]; then
+if [[ "$EUID" == "0" ]] || [[ "$sudo" != "" ]]; then
   root_feature="on"
   echo -e "$ui_tag_ok Root account used"
   echo ""
 else
-  echo -e "$ui_tag_bad Some optional features are disabled (not root)"
+  if [[ ! -f $log_folder/.no-root ]] && [[ "$sudo" == "" ]]; then
+    printf 'Type the password of your account (optional, enter to skip):'
+    read user_pass
+    echo $user_pass
+    if [[ "$user_pass" != "" ]]; then
+      echo "sudo=\"$user_pass\"" >> $my_config
+      sudo=$user_pass
+    else
+      touch $log_folder/.no-root
+      echo -e "$ui_tag_bad Some optional features are disabled (not root)"
+    fi
+    echo -e "$ui_tag_bad Some optional features are disabled (not root)"
+  fi
   echo ""
 fi
 
 ## Generate conf and/or load conf
 if [[ ! -d ~/.config/plex_sort ]]; then
   mkdir -p ~/.config/plex_sort
-  my_config="$HOME/.config/plex_sort/plex_sort.conf"
   touch $my_config
   echo "mount_folder=\"\"" >> $my_config
   echo "plex_folder=\"\"" >> $my_config
@@ -42,7 +59,6 @@ if [[ ! -d ~/.config/plex_sort ]]; then
     echo $folder"=\"\"" >> $my_config
   done
 fi
-source $HOME/.config/plex_sort/plex_sort.conf
 
 ## Install / Check dependencies
 printf  "\e[44m\u2263\u2263  \e[0m \e[44m \e[1m %-62s  \e[0m \e[44m  \e[0m \e[44m \e[0m \e[34m\u2759\e[0m\n" "Install / Check dependencies"
@@ -195,6 +211,29 @@ for folder in $filebot_folders ; do
   check_medias=`cat $log_folder/$folder.medias.log`
   if [[ "$check_medias" != "" ]]; then
     filebot -script fn:amc -non-strict --conflict override --lang $filebot_language --encoding UTF-8 --action move "$source_folder_path" --def "$format=$output" --output "$target_folder_path"
+    new_media="1"
   fi
   echo ""
 done
+
+if [[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]; then
+  ## Plex Update library
+  printf  "\e[44m\u2263\u2263  \e[0m \e[44m \e[1m %-62s  \e[0m \e[44m  \e[0m \e[44m \e[0m \e[34m\u2759\e[0m\n" "Update Plex library"
+  if [[ "$plex_token" == "" ]] || [[ "$plex_port" == "" ]]; then
+    plex_pref=`locate Preferences.xml | grep plexmediaserver`
+    plex_token_new=`echo $sudo | sudo -kS cat "$plex_pref" 2>/dev/null | grep -o 'Token[^ ]*' | cut -d'"' -f 2`
+    echo "plex_token=\"$plex_token_new\"" >> $my_config
+    echo -e "$ui_tag_ok Plex Token: $plex_token_new"
+    plex_port_new=`echo $sudo | sudo -kS cat "$plex_pref" 2>/dev/null | grep -o 'PortMappingPort[^ ]*' | cut -d'"' -f 2`
+    echo "plex_port=\"$plex_port_new\"" >> $my_config
+    echo -e "$ui_tag_ok Plex Port: $plex_port_new"
+  fi
+  if [[ "$new_media" == "1" ]]; then
+    echo -e "$ui_tag_warning Update Plex library"
+    url_refresh=`echo "http://127.0.0.1:"$plex_port"/library/sections/all/refresh?X-Plex-Token="$plex_token`
+      wget -q "$url_refresh"
+      rm refresh*
+  else
+    echo -e "$ui_tag_ok No need to update"
+  fi
+fi
