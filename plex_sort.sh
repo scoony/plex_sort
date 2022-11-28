@@ -89,7 +89,7 @@ fi
 
 ## Update and check web
 printf  "\e[44m\u2263\u2263  \e[0m \e[44m \e[1m %-62s  \e[0m \e[44m  \e[0m \e[44m \e[0m \e[34m\u2759\e[0m\n" "Internet availability and Update"
-if curl -s -m 3 --head --request GET https://github.com > /dev/null; then 
+if curl -s -m 3 --head --request GET https://github$update_allowed.com > /dev/null; then 
   remote_md5=`curl -s https://raw.githubusercontent.com/scoony/plex_sort/main/plex_sort.sh | md5sum | cut -f1 -d" "`
   local_md5=`md5sum $0 | cut -f1 -d" "`
   if [[ "$remote_md5" != "$local_md5" ]]; then
