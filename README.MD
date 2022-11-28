@@ -18,6 +18,9 @@ This script can be used without Plex, it store your medias for you automatically
 
 ## Requirements
 - Filebot (a licence might be required)
+- awk
+- wget
+- curl
 
 ## Install (will be automated soon)
 - download plex_sort.sh
