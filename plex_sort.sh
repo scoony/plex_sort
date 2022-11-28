@@ -36,22 +36,22 @@ ui_tag_root="[\e[47m \u2713 \e[0m]"
 ui_tag_section="\e[44m\u2263\u2263  \e[0m \e[44m \e[1m %-62s  \e[0m \e[44m  \e[0m \e[44m \e[0m \e[34m\u2759\e[0m\n"
 
 ## Check if root for extra features
-if [[ "$mui_root_title" == "" ]]; then
-  mui_root_title="Check account used"
-fi
+if [[ "$mui_root_title" == "" ]]; then          ## MUI
+  mui_root_title="Check account used"           ##
+fi                                              ##
 printf "$ui_tag_section" "$mui_root_title"
 if [[ "$EUID" == "0" ]] || [[ "$sudo" != "" ]]; then
-  if [[ "$mui_root_used" == "" ]]; then
-    mui_root_used="Root privileges granted"
-  fi
+  if [[ "$mui_root_used" == "" ]]; then         ## MUI
+    mui_root_used="Root privileges granted"     ##
+  fi                                            ##
   echo -e "$ui_tag_ok $mui_root_used"
   native_sudo="1"
   echo ""
 else
   if [[ ! -f $log_folder/.no-root ]] && [[ "$sudo" == "" ]]; then
-    if [[ "$mui_root_question" == "" ]]; then
-      mui_root_question="Type the password of your account (optional, enter to skip): "
-    fi
+    if [[ "$mui_root_question" == "" ]]; then                                               ## MUI
+      mui_root_question="Type the password of your account (optional, enter to skip): "     ##
+    fi                                                                                      ##
     printf '"$mui_root_question"'
     read user_pass
     echo $user_pass
