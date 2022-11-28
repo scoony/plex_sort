@@ -1,7 +1,5 @@
 #!/bin/bash
 
-## LOG FOLDER missing
-## IF New download folder and no target skip
 
 ## Check if this script is running
 check_dupe=$(ps -ef | grep "$0" | grep -v grep | wc -l | xargs)
@@ -10,6 +8,26 @@ if [[ "$check_dupe" > "2" ]]; then
   exit 1
 fi
 
+## Required for logs and conf
+my_config="$HOME/.config/plex_sort/plex_sort.conf"
+source $HOME/.config/plex_sort/plex_sort.conf
+if [[ "$log_folder" == "" ]]; then
+  log_folder="$HOME/.config/plex_sort"
+fi
+
+## MUI Feature
+if [[ ! -d $log_folder/MUI ]]; then
+  mkdir -p "$log_folder/MUI"
+fi
+user_lang=$(locale | grep LANGUAGE | cut -d= -f2 | cut -d_ -f1)
+md5_lang_local=`md5sum $log_folder/MUI/$user_lang.lang | cut -f1 -d" "`
+md5_lang_remote=`curl -s https://raw.githubusercontent.com/scoony/plex_sort/main/MUI/$user_lang.lang | md5sum | cut -f1 -d" "`
+if [[ ! -f $log_folder/MUI/$user_lang.lang ]] || [[ "$md5_lang_local" != "$md5_lang_remote" ]]; then
+  echo "... Updating Language ..."
+  wget --quiet https://raw.githubusercontent.com/scoony/plex_sort/main/MUI/$user_lang.lang -O $log_folder/MUI/$user_lang.lang >/dev/null
+fi
+source $log_folder/MUI/$user_lang.lang
+
 ## UI Design
 ui_tag_ok="[\e[42m \u2713 \e[0m]"
 ui_tag_bad="[\e[41m \u2713 \e[0m]"
@@ -17,19 +35,24 @@ ui_tag_warning="[\e[43m \u2713 \e[0m]"
 ui_tag_root="[\e[47m \u2713 \e[0m]"
 ui_tag_section="\e[44m\u2263\u2263  \e[0m \e[44m \e[1m %-62s  \e[0m \e[44m  \e[0m \e[44m \e[0m \e[34m\u2759\e[0m\n"
 
-my_config="$HOME/.config/plex_sort/plex_sort.conf"
-source $HOME/.config/plex_sort/plex_sort.conf
-
-
 ## Check if root for extra features
-printf "$ui_tag_section" "Check account used"
+if [[ "$mui_root_title" == "" ]]; then
+  mui_root_title="Check account used"
+fi
+printf "$ui_tag_section" "$mui_root_title"
 if [[ "$EUID" == "0" ]] || [[ "$sudo" != "" ]]; then
-  echo -e "$ui_tag_ok Root account used"
+  if [[ "$mui_root_used" == "" ]]; then
+    mui_root_used="Root privileges granted"
+  fi
+  echo -e "$ui_tag_ok $mui_root_used"
   native_sudo="1"
   echo ""
 else
   if [[ ! -f $log_folder/.no-root ]] && [[ "$sudo" == "" ]]; then
-    printf 'Type the password of your account (optional, enter to skip):'
+    if [[ "$mui_root_question" == "" ]]; then
+      mui_root_question="Type the password of your account (optional, enter to skip): "
+    fi
+    printf '"$mui_root_question"'
     read user_pass
     echo $user_pass
     if [[ "$user_pass" != "" ]]; then
