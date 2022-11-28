@@ -10,6 +10,8 @@ fi
 ## UI Design
 ui_tag_ok="[\e[42m \u2713 \e[0m]"
 ui_tag_bad="[\e[41m \u2713 \e[0m]"
+ui_tag_warning="[\e[43m \u2713 \e[0m]"
+ui_tag_root="[\e[47m \u2713 \e[0m]"
 
 ## Check if root for extra features
 printf  "\e[44m\u2263\u2263  \e[0m \e[44m \e[1m %-62s  \e[0m \e[44m  \e[0m \e[44m \e[0m \e[34m\u2759\e[0m\n" "Check account used"
@@ -108,7 +110,11 @@ if curl -s -m 3 --head --request GET https://github$update_allowed.com > /dev/nu
     echo -e "$ui_tag_ok Script up to date."
   fi
 else
-  echo -e "$ui_tag_bad GitHub unreachable no update."
+  if [[ "$update_allowed" == "" ]]; then
+    echo -e "$ui_tag_bad GitHub unreachable no update."
+  else
+    echo -e "$ui_tag_warning Update Disabled (config)"
+  fi
 fi
 if curl -s -m 3 --head --request GET https://www.thetvdb.com > /dev/null; then
   echo -e "$ui_tag_ok TheTVDB is online."
