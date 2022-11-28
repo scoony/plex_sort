@@ -217,7 +217,7 @@ for folder in $filebot_folders ; do
   echo ""
 done
 
-if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo" == "1"]]; then
+if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo" == "1" ]]; then
   ## Plex Update library
   printf  "\e[44m\u2263\u2263  \e[0m \e[44m \e[1m %-62s  \e[0m \e[44m  \e[0m \e[44m \e[0m \e[34m\u2759\e[0m\n" "Update Plex library"
   if [[ "$plex_token" == "" ]] || [[ "$plex_port" == "" ]]; then
