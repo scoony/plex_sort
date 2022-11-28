@@ -114,6 +114,9 @@ for folder in $filebot_folders ; do
     output="{n}/{'$filebot_season_folder '+s.pad(2)}/{n} - {sxe} - {t}"
   fi
   echo "Agent used: $agent"
-  folder_files=`find "$folder_path" -type f -iname '*[avi|mp4|mkv]' > $log_folder/$folder.medias.log`
-  ##filebot -script fn:amc -non-strict --conflict override --lang $filebot_language --encoding UTF-8 --action move "$folder_path" --def "$format=$output" --output "$target_folder_path"
+  folder_files=`find "$source_folder_path" -type f -iname '*[avi|mp4|mkv]' > $log_folder/$folder.medias.log`
+  check_medias=`cat $log_folder/$folder.medias.log`
+  if [[ "$check_medias" != "" ]]; then
+    filebot -script fn:amc -non-strict --conflict override --lang $filebot_language --encoding UTF-8 --action move "$source_folder_path" --def "$format=$output" --output "$target_folder_path"
+  fi
 done
