@@ -14,13 +14,14 @@ ui_tag_ok="[\e[42m \u2713 \e[0m]"
 ui_tag_bad="[\e[41m \u2713 \e[0m]"
 ui_tag_warning="[\e[43m \u2713 \e[0m]"
 ui_tag_root="[\e[47m \u2713 \e[0m]"
+ui_tag_section="\e[44m\u2263\u2263  \e[0m \e[44m \e[1m %-62s  \e[0m \e[44m  \e[0m \e[44m \e[0m \e[34m\u2759\e[0m\n"
 
 my_config="$HOME/.config/plex_sort/plex_sort.conf"
 source $HOME/.config/plex_sort/plex_sort.conf
 
 
 ## Check if root for extra features
-printf  "\e[44m\u2263\u2263  \e[0m \e[44m \e[1m %-62s  \e[0m \e[44m  \e[0m \e[44m \e[0m \e[34m\u2759\e[0m\n" "Check account used"
+printf "$ui_tag_section" "Check account used"
 if [[ "$EUID" == "0" ]] || [[ "$sudo" != "" ]]; then
   echo -e "$ui_tag_ok Root account used"
   native_sudo="1"
@@ -61,7 +62,7 @@ if [[ ! -d ~/.config/plex_sort ]]; then
 fi
 
 ## Install / Check dependencies
-printf  "\e[44m\u2263\u2263  \e[0m \e[44m \e[1m %-62s  \e[0m \e[44m  \e[0m \e[44m \e[0m \e[34m\u2759\e[0m\n" "Install / Check dependencies"
+printf "$ui_tag_section" "Install / Check dependencies"
 my_dependencies="filebot curl wget awk"
 for dependency in $my_dependencies ; do
   if $dependency -help > /dev/null 2>/dev/null ; then
@@ -82,7 +83,7 @@ done
 echo ""
 
 ## Check FileBot Licence
-printf  "\e[44m\u2263\u2263  \e[0m \e[44m \e[1m %-62s  \e[0m \e[44m  \e[0m \e[44m \e[0m \e[34m\u2759\e[0m\n" "Check FileBot licence"
+printf "$ui_tag_section" "Check FileBot licence"
 if [[ ! -f $log_folder/.licence ]]; then
   echo ""
   check_local_licence=`filebot -script fn:sysinfo script | grep "Valid-Until"`
@@ -106,7 +107,7 @@ else
 fi
 
 ## Update and check web
-printf  "\e[44m\u2263\u2263  \e[0m \e[44m \e[1m %-62s  \e[0m \e[44m  \e[0m \e[44m \e[0m \e[34m\u2759\e[0m\n" "Internet availability and Update"
+printf "$ui_tag_section" "Internet availability and Update"
 if curl -s -m 3 --head --request GET https://github$update_allowed.com > /dev/null; then 
   remote_md5=`curl -s https://raw.githubusercontent.com/scoony/plex_sort/main/plex_sort.sh | md5sum | cut -f1 -d" "`
   local_md5=`md5sum $0 | cut -f1 -d" "`
@@ -145,7 +146,7 @@ fi
 echo ""
 
 ## Detect Plex folders and select best target
-printf  "\e[44m\u2263\u2263  \e[0m \e[44m \e[1m %-62s  \e[0m \e[44m  \e[0m \e[44m \e[0m \e[34m\u2759\e[0m\n" "Detect Plex folders"
+printf "$ui_tag_section" "Detect Plex folders"
 plex_folders=`ls -d $mount_folder/*/$plex_folder/`
 for plex_path in $plex_folders ; do
   if [[ ! "$exclude_folders" =~ "$plex_path" ]]; then
@@ -164,7 +165,7 @@ echo -e "$ui_tag_ok Best target: $best_plex_target ($best_free )"
 echo ""
 
 ## Detect download folders and space required
-printf  "\e[44m\u2263\u2263  \e[0m \e[44m \e[1m %-62s  \e[0m \e[44m  \e[0m \e[44m \e[0m \e[34m\u2759\e[0m\n" "Detect download folders"
+printf "$ui_tag_section" "Detect download folders"
 filebot_folders=`ls "$download_folder" | grep -i "filebot"`
 for folder in $filebot_folders ; do
   echo -e "$ui_tag_ok Folder: $folder"
@@ -190,7 +191,7 @@ echo -e "$ui_tag_ok Space required to store content: $space_required_human"
 echo ""
 
 ## Here we go
-printf  "\e[44m\u2263\u2263  \e[0m \e[44m \e[1m %-62s  \e[0m \e[44m  \e[0m \e[44m \e[0m \e[34m\u2759\e[0m\n" "Sorting process"
+printf "$ui_tag_section" "Sorting process"
 for folder in $filebot_folders ; do
   source_folder_path=`echo $download_folder"/"$folder`
   target_conf=${!folder}
@@ -218,7 +219,7 @@ done
 
 if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo" == "1" ]]; then
   ## Plex Update library
-  printf  "\e[44m\u2263\u2263  \e[0m \e[44m \e[1m %-62s  \e[0m \e[44m  \e[0m \e[44m \e[0m \e[34m\u2759\e[0m\n" "Update Plex library"
+  printf "$ui_tag_section" "Update Plex library"
   if [[ "$plex_token" == "" ]] || [[ "$plex_port" == "" ]]; then
     plex_pref=`locate Preferences.xml | grep plexmediaserver`
     plex_token_new=`echo $sudo | sudo -kS cat "$plex_pref" 2>/dev/null | grep -o 'Token[^ ]*' | cut -d'"' -f 2`
