@@ -24,13 +24,13 @@ source $HOME/.config/plex_sort/plex_sort.conf
 ## Install / Check dependencies
 my_dependencies="filebot curl wget awk"
 for dependency in $my_dependencies ; do
-  if $dependency -help > /dev/null 2&>1 ; then
+  if $dependency -help > /dev/null 2>/dev/null ; then
     echo "Dependency ok: $dependency"
   else
     echo "Dependency missing: $dependency"
     echo "Trying to install..."
-    apt install $dependency -y
-    if $dependency -help > /dev/null 2&>1 ; then
+    apt install $dependency -y 2>/dev/null
+    if $dependency -help > /dev/null 2>/dev/null ; then
       echo "Dependency ok: $dependency"
     else
       echo "Dependency missing: $dependency"
@@ -59,7 +59,7 @@ if curl -s -m 3 --head --request GET https://github.com > /dev/null; then
     script_upgrade
   fi
 else
-  echo "GITHUB unreachable no update."
+  echo "GitHub unreachable no update."
   echo ""
 fi
 
