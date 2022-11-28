@@ -39,7 +39,27 @@ for dependency in $my_dependencies ; do
     fi
   fi
 done
-echo ""
+
+## Check FileBot Licence
+if [[ ! -f $log_folder/.licence ]]; then
+  echo ""
+  check_local_licence=`filebot -script fn:sysinfo script | grep "Valid-Until"`
+  if [[ "$check_local_licence" == "" ]]; then
+    locate_filebot_licence=`locate -ir "filebot*.*.psm$"`
+    for licence in $locate_filebot_licence ; do
+      filebot_licence_validity=`cat $locate_filebot_licence | grep "Valid-Until" | awk '{ print $2 }'`
+      ## prévoir au cas où plusieurs licences
+      filebot --license $licence
+    done
+  else
+    touch $log_folder/.licence
+    echo $check_local_licence > $log_folder/.licence
+  fi
+else
+  filebot_date=`cat $log_folder/.licence | awk 'END {print $NF}'`
+  echo "Filebot is activated ($filebot_date"
+  echo ""
+fi
 
 ## Update process
 if curl -s -m 3 --head --request GET https://github.com > /dev/null; then 
