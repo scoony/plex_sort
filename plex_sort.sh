@@ -259,7 +259,7 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
   locate_dbs=`ls $log_folder/*.locate.db`
   locate_path=`echo $locate_dbs | sed 's/ /:/g'`
 ##  echo $locate_path
-##  echo $sudo | sudo -kS locate -d $locate_path: * 2>/dev/null > $log_folder/full_plex.txt
+  echo $sudo | sudo -kS locate -d $locate_path: . 2>/dev/null > $log_folder/full_plex.txt
 fi
 
 ## Plex Update library
