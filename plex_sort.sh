@@ -265,7 +265,7 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
 
   ## List empty folder and crap
   echo "Check this..."
-  cat $log_folder/full_plex.txt | egrep -i '[^.mkv|^.avi|^.mp4]$'
+  cat $log_folder/full_plex.txt | | egrep -iv ".mkv$|.avi$|.mp4$"
 
   my_files=()
   while IFS= read -r -d $'\n'; do
