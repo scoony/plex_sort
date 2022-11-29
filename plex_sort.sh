@@ -251,7 +251,7 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
   echo -e "$ui_tag_ok Generating Plex content DBs"
   for folder_db in $plex_folders ; do
     ## RETIRER LES DOSSIERS VIDES - ATTENTION SOUCIS
-    find "$folder_db" –type d -empty
+    ##find "$folder_db" –type d -empty
     disk_db=`echo $folder_db | sed 's/\/Plex\///'`
     disk_db_id="$(basename $disk_db)"
     echo -e "$ui_tag_ok Folder: $folder_db (DB: $disk_db_id.locate.db)"
@@ -262,6 +262,11 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
   locate_path=`echo $locate_dbs | sed 's/ /:/g'`
 ##  echo $locate_path
   echo $sudo | sudo -kS locate -d $locate_path: . 2>/dev/null > $log_folder/full_plex.txt
+
+  ## List empty folder and crap
+  echo "Check this..."
+  cat $log_folder/full_plex.txt | egrep -i '[^.mkv|^.avi|^.mp4]$'
+
   my_files=()
   while IFS= read -r -d $'\n'; do
   my_files+=("$REPLY")
