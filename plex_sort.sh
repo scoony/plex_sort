@@ -265,16 +265,16 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
 
   ## List empty folder and crap
   echo "Check this..."
-  cat $log_folder/full_plex.txt | egrep -iv ".mkv$|.avi$|.mp4$|.m4v$|.ogm$|.divx$|.ts$|.mp3$"
+  cat $log_folder/full_plex.txt | egrep -iv ".mkv$|.avi$|.mp4$|.m4v$|.ogm$|.divx$|.ts$|.mp3$|.mpg$"
 
   my_files=()
   while IFS= read -r -d $'\n'; do
   my_files+=("$REPLY")
   done <$log_folder/full_plex.txt
-  touch $log_folder/files_only.txt
-  for i in "${my_files[@]}"; do
-    basename "$i" >> $log_folder/files_only.txt
-  done
+##  touch $log_folder/files_only.txt
+##  for i in "${my_files[@]}"; do
+##    basename "$i" >> $log_folder/files_only.txt
+##  done
 fi
 
 ## Plex Update library
