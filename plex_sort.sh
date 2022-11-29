@@ -295,7 +295,7 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
     this_dupe+=("$REPLY")
     done <$log_folder/current_dupe.txt
     rm $log_folder/current_dupe.txt
-    for k in "${this_dupe[@]}"; do
+    for k in "${this_dupe[@]}"; do                                                                                                        ## collect infos on each dupe
       echo "$k"
     done
   done
