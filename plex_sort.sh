@@ -74,7 +74,7 @@ if [[ ! -d ~/.config/plex_sort ]]; then
   echo "mount_folder=\"\"" >> $my_config
   echo "plex_folder=\"\"" >> $my_config
   echo "download_folder=\"\"" >> $my_config
-  echo "exclude_folder=\"\"" >> $my_config
+  echo "exclude_folders=\"\"" >> $my_config
   echo "filebot_language=\"\" ## \"en\" in english, \"fr\" in french" >> $my_config
   echo "filebot_season_folder=\"\" ## \"Season\" in english, \"Saison\" in french" >> $my_config
   echo "log_folder=\"\"" >> $my_config
@@ -260,21 +260,45 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
   echo -e "$ui_tag_ok Done"
   locate_dbs=`ls $log_folder/*.locate.db`
   locate_path=`echo $locate_dbs | sed 's/ /:/g'`
-##  echo $locate_path
-  echo $sudo | sudo -kS locate -d $locate_path: . 2>/dev/null > $log_folder/full_plex.txt
-
-  ## List empty folder and crap
-  echo "Check this..."
-  cat $log_folder/full_plex.txt | egrep -iv ".mkv$|.avi$|.mp4$|.m4v$|.ogm$|.divx$|.ts$|.mp3$|.mpg$"
-
+  echo $sudo | sudo -kS locate -d $locate_path: . 2>/dev/null > $log_folder/full_plex.txt                                                 ## dump the whole dbs in a single file
+  cat $log_folder/full_plex.txt | egrep -i ".mkv$|.avi$|.mp4$|.m4v$|.ogm$|.divx$|.ts$|.mp3$|.mpg$" > $log_folder/full_plex_clean.txt      ## remove everything except medias
   my_files=()
   while IFS= read -r -d $'\n'; do
   my_files+=("$REPLY")
-  done <$log_folder/full_plex.txt
-##  touch $log_folder/files_only.txt
-##  for i in "${my_files[@]}"; do
-##    basename "$i" >> $log_folder/files_only.txt
-##  done
+  done <$log_folder/full_plex_clean.txt
+  touch $log_folder/files_only.txt
+  time1=`date +%s`
+  echo -e "$ui_tag_ok Extracting filenames... "
+  for i in "${my_files[@]}"; do
+    basename "$i" >> $log_folder/files_only.txt ## remove paths
+    ## remove extension too slow: | rev | cut -f 2- -d '.' | rev
+  done
+  rm $log_folder/full_plex_clean.txt
+  rm $log_folder/full_plex.txt
+  cat $log_folder/files_only.txt | sed 's/\.[^.]*$//' | tr '[:upper:]' '[:lower:]' > $log_folder/files_done.txt                           ## remove extensions and everything lower case
+  rm $log_folder/files_only.txt
+  time2=`date +%s`
+  duration=$(($time2-$time1))
+  echo -e "$ui_tag_ok Extraction completed (in "$duration"s)"
+  cat $log_folder/files_done.txt | uniq -cd > $log_folder/dupes.txt                                                                       ## search for dupes
+  rm $log_folder/files_done.txt
+  my_dupes=()
+  while IFS= read -r -d $'\n'; do
+  my_dupes+=("$REPLY")
+  done <$log_folder/dupes.txt
+  rm $log_folder/dupes.txt
+  for j in "${my_dupes[@]}"; do
+    my_dupe_file=`echo $j | awk '{for (i=2; i<=NF; i++) printf $i FS}'`
+    echo $sudo | sudo -kS locate -i -d $locate_path: $my_dupe_file 2>/dev/null > $log_folder/current_dupe.txt                             ## locate dupes
+    this_dupe=()
+    while IFS= read -r -d $'\n'; do
+    this_dupe+=("$REPLY")
+    done <$log_folder/current_dupe.txt
+    rm $log_folder/current_dupe.txt
+    for k in "${this_dupe[@]}"; do
+      echo "$k"
+    done
+  done
 fi
 
 ## Plex Update library
