@@ -106,7 +106,7 @@ fi
 
 ## Install / Check dependencies
 printf "$ui_tag_section" "Install / Check dependencies"
-my_dependencies="filebot curl wget awk"
+my_dependencies="filebot curl wget awk trash-put"
 for dependency in $my_dependencies ; do
   if $dependency -help > /dev/null 2>/dev/null ; then
     echo -e "$ui_tag_ok Dependency: $dependency"
@@ -349,7 +349,7 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
       done
       file_remove=`sort $log_folder/current_process.txt | head -n1 | grep -oP '(?<=¤).*(?=¤)'`
       if [[ "$file_remove" != "" ]]; then
-##        gvfs-trash "$file_remove"
+        trash-put "$file_remove"
         echo -e "$ui_tag_ok File sent to trash: $file_remove"
         if [[ "$push_for_cleaning" == "yes" ]]; then
           trash_file_date=`date -r "$file_remove" "+%d/%m/%Y"`
