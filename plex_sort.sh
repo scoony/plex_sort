@@ -10,24 +10,30 @@ if [[ "$check_dupe" > "2" ]]; then
 fi
 
 ## Required for logs and conf
-my_config="$HOME/.config/plex_sort/plex_sort.conf"
-source $HOME/.config/plex_sort/plex_sort.conf
 if [[ "$log_folder" == "" ]]; then
   log_folder="$HOME/.config/plex_sort"
 fi
-
-## Crontab
-if [[ "$crontab_entry" == "" ]]; then
-  crontab_entry="*/15 * * * *		/opt/scripts/plex_sort.sh > /var/log/plex_sort.log 2>&1"
+if [[ ! -d "$HOME/.config/plex_sort" ]]; then
+  mkdir -p "$HOME/.config/plex_sort"
 fi
-check_crontab=`crontab -l | grep "$crontab_entry"`
-if [[ "$check_crontab" == "$crontab_entry" ]]; then
-  echo "Script activated in cron"
-elif [[ "$check_crontab" == "#*" ]]; then
-  echo "Script disabled in cron"
-else
-  crontab -l > $log_folder/cron-save.txt
-  ##crontab -l | { cat; echo "$crontab_entry"; } | crontab -
+my_config="$HOME/.config/plex_sort/plex_sort.conf"
+source $HOME/.config/plex_sort/plex_sort.conf
+
+## Crontab check and/or activation
+if [[ "$crontab_activation" == "yes" ]]; then
+  if [[ "$crontab_entry" == "" ]]; then
+    crontab_entry="*/15 * * * *		/opt/scripts/plex_sort.sh > /var/log/plex_sort.log 2>&1"
+  fi
+  check_crontab=`crontab -l | grep "plex_sort.sh"`
+  if [[ "$check_crontab" == "" ]]; then
+    crontab -l > $log_folder/cron-save.txt
+    crontab -l | { cat; echo "$crontab_entry"; } | crontab -
+    echo "... script installed in cron"
+  elif [[ ${check_crontab:0:1} == '#' ]]; then
+    printf "\e[46m\u25B6\u25B6  \e[0m \e[45m \e[1m %-40s  \e[0m \e[45m  \e[0m \e[45m \e[0m \e[35m\u2759\e[0m\n" "Script disabled in cron"
+  else
+    printf "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[1m %-40s  \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Script activated in cron"
+  fi
 fi
 
 ## Push feature
@@ -69,6 +75,34 @@ ui_tag_warning="[\e[43m \u2713 \e[0m]"
 ui_tag_root="[\e[47m \u2713 \e[0m]"
 ui_tag_section="\e[44m\u2263\u2263  \e[0m \e[44m \e[1m %-62s  \e[0m \e[44m  \e[0m \e[44m \e[0m \e[34m\u2759\e[0m\n"
 
+## Generate conf and/or load conf
+if [[ ! -f "$my_config" ]]; then
+  touch $my_config
+fi
+my_settings_variables="crontab_entry mount_folder plex_folder download_folder exclude_folders filebot_language filebot_season_folder log_folder token_app target_1 target_2 push_for_move push_for_cleaning update_allowed"
+for script_variable in $my_settings_variables ; do
+  if [[ "$my_config" =~ "$script_variable" ]]; then
+    echo $script_variable"=\"\"" >> $my_config
+    echo "New variable added: $script_variable"
+    echo "... config file updated"
+    config_updated="1"
+  fi
+done
+filebot_folders=`ls "$download_folder" | grep -i "filebot"`
+for folder in $filebot_folders ; do
+  if [[ "$my_config" =~ "$folder" ]]; then
+    echo $folder"=\"\"" >> $my_config
+    echo "New download folder detected: $folder"
+    echo "... config file updated"
+    config_updated="1"
+  fi
+done
+if [[ "$config_updated" != "1" ]]; then
+  printf "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[1m %-40s  \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Config is up to date"
+fi
+
+echo ""                                    ## space in between title and sections
+ 
 ## Check if root for extra features
 if [[ "$mui_root_title" == "" ]]; then          ## MUI
   mui_root_title="Check account used"           ##
@@ -99,24 +133,6 @@ else
     echo -e "$ui_tag_bad Some optional features are disabled (not root)"
   fi
   echo ""
-fi
-
-## Generate conf and/or load conf
-if [[ ! -d ~/.config/plex_sort ]]; then
-  mkdir -p ~/.config/plex_sort
-  touch $my_config
-  echo "mount_folder=\"\"" >> $my_config
-  echo "plex_folder=\"\"" >> $my_config
-  echo "download_folder=\"\"" >> $my_config
-  echo "exclude_folders=\"\"" >> $my_config
-  echo "filebot_language=\"\" ## \"en\" in english, \"fr\" in french" >> $my_config
-  echo "filebot_season_folder=\"\" ## \"Season\" in english, \"Saison\" in french" >> $my_config
-  echo "log_folder=\"\"" >> $my_config
-  echo "" >> $my_config
-  filebot_folders=`ls "$download_folder" | grep -i "filebot"`
-  for folder in $filebot_folders ; do
-    echo $folder"=\"\"" >> $my_config
-  done
 fi
 
 ## Install / Check dependencies
@@ -381,6 +397,7 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
   else
     echo -e "$ui_tag_ok No dupes found"
   fi
+  echo ""
 fi
 
 ## Plex Update library
