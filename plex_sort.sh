@@ -257,8 +257,33 @@ for folder in $filebot_folders ; do
     folder_files=`find "$source_folder_path" -type f -iname '*[avi|mp4|mkv]' > $log_folder/$folder.medias.log`
     check_medias=`cat $log_folder/$folder.medias.log`
     if [[ "$check_medias" != "" ]]; then
-      filebot -script fn:amc -non-strict --conflict override --lang $filebot_language --encoding UTF-8 --action move "$source_folder_path" --def "$format=$output" --output "$target_folder_path"
-      new_media="1"
+      filebot -script fn:amc -non-strict --conflict override --lang $filebot_language --encoding UTF-8 --action move "$source_folder_path" --def "$format=$output" --output "$target_folder_path" 2>/dev/null > $log_folder/filebot_output.txt
+      cat "$log_folder/filebot_output.txt" | grep "\[MOVE\]" > $log_folder/move_done.txt
+      filebot_moves=()
+      while IFS= read -r -d $'\n'; do
+      filebot_moves+=("$REPLY")
+      done <$log_folder/move_done.txt
+      rm $log_folder/move_done.txt
+      if [[ "${filebot_moves[@]}" != "" ]]; then
+##        echo "DEBUG: Move detected"
+        for move_done in "${filebot_moves[@]}"; do
+##          echo "DEBUG: $move_done"
+          move_source=`echo "$move_done" |  grep -oP '(?<=from \[).*(?=\] to)'`
+          move_target=`echo "$move_done" |  grep -oP '(?<=to \[).*(?=\]$)'`
+          echo -e "$ui_tag_ok File(s) processed:"
+          echo -e "....... Source: $move_source"
+          echo -e "....... Target: $move_target"
+          echo -e ".............."
+          new_media="1"
+          if [[ "$push_for_move" == "yes" ]]; then
+            file_source=`basename "$move_source"`
+            file_target=`basename "$move_target"`
+            target_folder=`dirname "$move_target"`
+            my_message=` echo -e "[ <b>MEDIA MOVED</b> ] [ <b>$target_conf</b> ]\n\n<b>Source Name: </b>$file_source\n<b>Target Name: </b>$file_target\n\n<b>Destination: </b>$target_folder"`
+            push-message "Plex Sort" "$my_message"
+          fi
+        done
+      fi
     fi
     echo ""
   fi
@@ -326,7 +351,7 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
       if [[ "$file_remove" != "" ]]; then
 ##        gvfs-trash "$file_remove"
         echo -e "$ui_tag_ok File sent to trash: $file_remove"
-        if [[ "$token_app" != "" ]]; then
+        if [[ "$push_for_cleaning" == "yes" ]]; then
           trash_file_date=`date -r "$file_remove" "+%d/%m/%Y"`
           trash_file_format=`mediainfo --Inform="Video;%Format%" "$file_remove"`
           trash_file_resolution=`mediainfo --Inform="Video;%Width% x %Height%" "$file_remove"`
