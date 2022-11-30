@@ -29,10 +29,11 @@ if [[ "$crontab_activation" == "yes" ]]; then
     crontab -l > $log_folder/cron-save.txt
     crontab -l | { cat; echo "$crontab_entry"; } | crontab -
     echo "... script installed in cron"
+    printf "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[0m[\e[42m  \e[0m] %-57s  \e[0m] \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Script installed in cron"
   elif [[ ${check_crontab:0:1} == '#' ]]; then
-    printf "\e[46m\u25B6\u25B6  \e[0m \e[45m \e[1m %-40s  \e[0m \e[45m  \e[0m \e[45m \e[0m \e[35m\u2759\e[0m\n" "Script disabled in cron"
+    printf "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[0m[\e[41m  \e[0m] %-57s  \e[0m] \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Script disabled in cron"
   else
-    printf "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[1m %-40s  \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Script activated in cron"
+    printf "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[0m[\e[42m  \e[0m] %-57s  \e[0m] \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Script activated in cron"
   fi
 fi
 
@@ -63,8 +64,10 @@ user_lang=$(locale | grep LANGUAGE | cut -d= -f2 | cut -d_ -f1)
 md5_lang_local=`md5sum $log_folder/MUI/$user_lang.lang | cut -f1 -d" "`
 md5_lang_remote=`curl -s https://raw.githubusercontent.com/scoony/plex_sort/main/MUI/$user_lang.lang | md5sum | cut -f1 -d" "`
 if [[ ! -f $log_folder/MUI/$user_lang.lang ]] || [[ "$md5_lang_local" != "$md5_lang_remote" ]]; then
-  echo "... Updating Language ..."
+  printf "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[0m[\e[41m  \e[0m] %-57s  \e[0m] \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Language file updated ($user_lang)"
   wget --quiet https://raw.githubusercontent.com/scoony/plex_sort/main/MUI/$user_lang.lang -O $log_folder/MUI/$user_lang.lang >/dev/null
+else
+  printf "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[0m[\e[42m  \e[0m] %-57s  \e[0m] \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Language file up to date ($user_lang)"
 fi
 source $log_folder/MUI/$user_lang.lang
 
@@ -83,8 +86,7 @@ my_settings_variables="crontab_entry mount_folder plex_folder download_folder ex
 for script_variable in $my_settings_variables ; do
   if [[ "$my_config" =~ "$script_variable" ]]; then
     echo $script_variable"=\"\"" >> $my_config
-    echo "New variable added: $script_variable"
-    echo "... config file updated"
+    printf "\e[46m\u25B6\u25B6  \e[0m [\e[41m  \e[0m] %-57s  \e[0m] \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Config file updated, new variable added ($script_variable)"
     config_updated="1"
   fi
 done
@@ -92,15 +94,16 @@ filebot_folders=`ls "$download_folder" | grep -i "filebot"`
 for folder in $filebot_folders ; do
   if [[ "$my_config" =~ "$folder" ]]; then
     echo $folder"=\"\"" >> $my_config
-    echo "New download folder detected: $folder"
+    printf "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[0m[\e[41m  \e[0m] %-57s  \e[0m] \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Config file updated, new folder detected ($folder)"
     echo "... config file updated"
     config_updated="1"
   fi
 done
 if [[ "$config_updated" != "1" ]]; then
-  printf "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[1m %-40s  \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Config is up to date"
+  printf "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[0m[\e[42m  \e[0m] %-57s  \e[0m] \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Config file is up to date"
 fi
 
+printf "\e[46m\u25B6\u25B6  \e[0m \e[46m  %62s  \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Version: 0.1"
 echo ""                                    ## space in between title and sections
  
 ## Check if root for extra features
