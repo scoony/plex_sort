@@ -15,6 +15,25 @@ if [[ "$log_folder" == "" ]]; then
   log_folder="$HOME/.config/plex_sort"
 fi
 
+## Push feature
+push-message() {
+  push_title=$1
+  push_content=$2
+  for user in {1..10}; do
+    target=`eval echo "\\$target_"$user`
+    if [ -n "$target" ]; then
+      curl -s \
+        --form-string "token=$token_app" \
+        --form-string "user=$target" \
+        --form-string "title=$push_title" \
+        --form-string "message=$push_content" \
+        --form-string "html=1" \
+        --form-string "priority=0" \
+        https://api.pushover.net/1/messages.json > /dev/null
+    fi
+  done
+}
+
 ## MUI Feature
 if [[ ! -d $log_folder/MUI ]]; then
   mkdir -p "$log_folder/MUI"
@@ -287,18 +306,37 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
   my_dupes+=("$REPLY")
   done <$log_folder/dupes.txt
   rm $log_folder/dupes.txt
-  for j in "${my_dupes[@]}"; do
-    my_dupe_file=`echo $j | awk '{for (i=2; i<=NF; i++) printf $i FS}'`
-    echo $sudo | sudo -kS locate -i -d $locate_path: $my_dupe_file 2>/dev/null > $log_folder/current_dupe.txt                             ## locate dupes
-    this_dupe=()
-    while IFS= read -r -d $'\n'; do
-    this_dupe+=("$REPLY")
-    done <$log_folder/current_dupe.txt
-    rm $log_folder/current_dupe.txt
-    for k in "${this_dupe[@]}"; do                                                                                                        ## collect infos on each dupe
-      echo "$k"
+  if [[ "${my_dupes[@]}" != "" ]]; then
+    echo -e "$ui_tag_warning Dupes Found... processing"
+    echo "......"
+    for j in "${my_dupes[@]}"; do
+      my_dupe_file=`echo $j | awk '{for (i=2; i<=NF; i++) printf $i FS}'`
+      echo $sudo | sudo -kS locate -i -d $locate_path: $my_dupe_file 2>/dev/null > $log_folder/current_dupe.txt                           ## locate dupes
+      this_dupe=()
+      while IFS= read -r -d $'\n'; do
+      this_dupe+=("$REPLY")
+      done <$log_folder/current_dupe.txt
+      rm $log_folder/current_dupe.txt
+      for k in "${this_dupe[@]}"; do                                                                                                      ## collect infos on each dupe
+        date_file=`date -r "$k" "+%Y-%m-%d"`
+        echo "$date_file ¤$k¤" >> $log_folder/current_process.txt
+        echo -e "$ui_tag_warning Dupe Found: $k Date: $date_file"
+      done
+      file_remove=`sort $log_folder/current_process.txt | head -n1 | grep -oP '(?<=¤).*(?=¤)'`
+      if [[ "$file_remove" != "" ]]; then
+##        gvfs-trash "$file_remove"
+        echo -e "$ui_tag_ok File sent to trash: $file_remove"
+        if [[ "$token_app" != "" ]]; then
+          my_push_message=`echo -e "[ <b>DUPE SENT TO TRASH</b> ] the file $file_removed was sent to the trash."`
+          push-message "Plex Sort" "$my_push_message"
+        fi
+      fi
+      rm $log_folder/current_process.txt
+      echo "......"
     done
-  done
+  else
+    echo -e "$ui_tag_ok No dupes found"
+  fi
 fi
 
 ## Plex Update library
