@@ -22,9 +22,9 @@ if [[ "$crontab_entry" == "" ]]; then
 fi
 check_crontab=`crontab -l | grep "$crontab_entry"`
 if [[ "$check_crontab" == "$crontab_entry" ]]; then
-  echo "Script in cron"
+  echo "Script activated in cron"
 elif [[ "$check_crontab" == "#*" ]]; then
-  echo "Script disabled"
+  echo "Script disabled in cron"
 else
   ##crontab -l | { cat; echo "$crontab_entry"; } | crontab -
   echo "Prout"
