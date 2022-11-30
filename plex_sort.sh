@@ -327,7 +327,7 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
 ##        gvfs-trash "$file_remove"
         echo -e "$ui_tag_ok File sent to trash: $file_remove"
         if [[ "$token_app" != "" ]]; then
-          my_push_message=`echo -e "[ <b>DUPE SENT TO TRASH</b> ] the file $file_removed was sent to the trash."`
+          my_push_message=`echo -e "[ <b>DUPE SENT TO TRASH</b> ] the file $file_remove was sent to the trash."`
           push-message "Plex Sort" "$my_push_message"
         fi
       fi
