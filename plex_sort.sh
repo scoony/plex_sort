@@ -26,8 +26,8 @@ if [[ "$check_crontab" == "$crontab_entry" ]]; then
 elif [[ "$check_crontab" == "#*" ]]; then
   echo "Script disabled in cron"
 else
+  crontab -l > $log_folder/cron-save.txt
   ##crontab -l | { cat; echo "$crontab_entry"; } | crontab -
-  echo "Prout"
 fi
 
 ## Push feature
