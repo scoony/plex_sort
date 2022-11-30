@@ -1,5 +1,6 @@
 #!/bin/bash
 
+printf "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[1m %-62s  \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "PLEX SORT"
 
 ## Check if this script is running
 check_dupe=$(ps -ef | grep "$0" | grep -v grep | wc -l | xargs)
@@ -13,6 +14,20 @@ my_config="$HOME/.config/plex_sort/plex_sort.conf"
 source $HOME/.config/plex_sort/plex_sort.conf
 if [[ "$log_folder" == "" ]]; then
   log_folder="$HOME/.config/plex_sort"
+fi
+
+## Crontab
+if [[ "$crontab_entry" == "" ]]; then
+  crontab_entry="*/15 * * * *		/opt/scripts/plex_sort.sh > /var/log/plex_sort.log 2>&1"
+fi
+check_crontab=`crontab -l | grep "$crontab_entry"`
+if [[ "$check_crontab" == "$crontab_entry" ]]; then
+  echo "Script in cron"
+elif [[ "$check_crontab" == "#*" ]]; then
+  echo "Script disabled"
+else
+  ##crontab -l | { cat; echo "$crontab_entry"; } | crontab -
+  echo "Prout"
 fi
 
 ## Push feature
@@ -301,7 +316,7 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
     echo -e "$ui_tag_ok Folder: $folder_db (DB: $disk_db_id.locate.db)"
     echo $sudo | sudo -kS updatedb -U "$folder_db" -o "$log_folder/$disk_db_id.locate.db" 2>/dev/null
   done
-  echo -e "$ui_tag_ok Done"
+##  echo -e "$ui_tag_ok Done"
   locate_dbs=`ls $log_folder/*.locate.db`
   locate_path=`echo $locate_dbs | sed 's/ /:/g'`
   echo $sudo | sudo -kS locate -d $locate_path: . 2>/dev/null > $log_folder/full_plex.txt                                                 ## dump the whole dbs in a single file
