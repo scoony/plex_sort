@@ -11,19 +11,20 @@ This script can be used without Plex, it store your medias for you automatically
 - [x] detect best drive (according to free space)
 - [x] rename and move media properly
 - [x] update Plex library
-- [ ] check dupes
+- [x] check dupes
 - [ ] auto-clean download folders
-- [ ] send push messages
+- [x] send push messages
 - [ ] send mails
-- [ ] root features thru sudo or root cron
+- [x] root features thru sudo or root cron
 
 ## Features for root only
 - chmod source folders
 - chmod target folders
 - install automatically script dependencies
+- check for dupes and remove older file (medias only)
 
 ## Requirements
-- Filebot (a licence might be required)
+- filebot (a licence might be required)
 - awk
 - wget
 - curl

@@ -327,7 +327,11 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
 ##        gvfs-trash "$file_remove"
         echo -e "$ui_tag_ok File sent to trash: $file_remove"
         if [[ "$token_app" != "" ]]; then
-          my_push_message=`echo -e "[ <b>DUPE SENT TO TRASH</b> ] the file $file_remove was sent to the trash."`
+          trash_file_date=`date -r "$file_remove" "+%d/%m/%Y"`
+          trash_file_format=`mediainfo --Inform="Video;%Format%" "$file_remove"`
+          trash_file_resolution=`mediainfo --Inform="Video;%Width% x %Height%" "$file_remove"`
+          trash_file_duration=`mediainfo --Inform="Video;%Duration/String3%" "$file_remove"`
+          my_push_message=`echo -e "[ <b>DUPE SENT TO TRASH</b> ]\n\n<b>File:</b> $file_remove\n<b>Received: </b>$trash_file_date\n<b>Codec: </b>$trash_file_format\n<b>Resolution: </b>$trash_file_resolution\n<b>Duration: </b>$trash_file_duration"`
           push-message "Plex Sort" "$my_push_message"
         fi
       fi
