@@ -88,7 +88,7 @@ ui_tag_section="\e[44m\u2263\u2263  \e[0m \e[44m \e[1m %-62s  \e[0m \e[44m  \e[0
 if [[ ! -f "$my_config" ]]; then
   touch $my_config
 fi
-my_settings_variables="crontab_entry mount_folder plex_folder download_folder exclude_folders filebot_language filebot_season_folder log_folder token_app target_1 target_2 push_for_move push_for_cleaning update_allowed"
+my_settings_variables="display_mode crontab_entry mount_folder plex_folder download_folder exclude_folders filebot_language filebot_season_folder log_folder token_app target_1 target_2 push_for_move push_for_cleaning update_allowed"
 for script_variable in $my_settings_variables ; do
   if [[ "$my_config" =~ "$script_variable" ]]; then
     echo $script_variable"=\"\"" >> $my_config
