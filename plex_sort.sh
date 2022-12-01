@@ -1,5 +1,6 @@
 #!/bin/bash
 
+
 printf "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[1m %-62s  \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "PLEX SORT"
 
 ## Check if this script is running
@@ -19,6 +20,12 @@ fi
 my_config="$HOME/.config/plex_sort/plex_sort.conf"
 source $HOME/.config/plex_sort/plex_sort.conf
 
+## Display Mode
+if [[ "$display_mode" == "full" ]] || [[ "$@" =~ "--mode-full" ]]; then
+  echo1="echo"
+  printf1="printf"
+fi
+
 ## Crontab check and/or activation
 if [[ "$crontab_activation" == "yes" ]]; then
   if [[ "$crontab_entry" == "" ]]; then
@@ -29,11 +36,11 @@ if [[ "$crontab_activation" == "yes" ]]; then
     crontab -l > $log_folder/cron-save.txt
     crontab -l | { cat; echo "$crontab_entry"; } | crontab -
     echo "... script installed in cron"
-    printf "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[0m[\e[42m  \e[0m] %-57s  \e[0m] \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Script installed in cron"
+    $printf1 "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[0m[\e[42m  \e[0m] %-56s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Script installed in cron" 2>/dev/null
   elif [[ ${check_crontab:0:1} == '#' ]]; then
-    printf "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[0m[\e[41m  \e[0m] %-57s  \e[0m] \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Script disabled in cron"
+    $printf1 "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[0m[\e[41m  \e[0m] %-56s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Script disabled in cron" 2>/dev/null
   else
-    printf "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[0m[\e[42m  \e[0m] %-57s  \e[0m] \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Script activated in cron"
+    $printf1 "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[0m[\e[42m  \e[0m] %-56s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Script activated in cron" 2>/dev/null
   fi
 fi
 
@@ -64,10 +71,10 @@ user_lang=$(locale | grep LANGUAGE | cut -d= -f2 | cut -d_ -f1)
 md5_lang_local=`md5sum $log_folder/MUI/$user_lang.lang | cut -f1 -d" "`
 md5_lang_remote=`curl -s https://raw.githubusercontent.com/scoony/plex_sort/main/MUI/$user_lang.lang | md5sum | cut -f1 -d" "`
 if [[ ! -f $log_folder/MUI/$user_lang.lang ]] || [[ "$md5_lang_local" != "$md5_lang_remote" ]]; then
-  printf "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[0m[\e[41m  \e[0m] %-57s  \e[0m] \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Language file updated ($user_lang)"
+  printf "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[0m[\e[43m  \e[0m] %-56s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Language file updated ($user_lang)"
   wget --quiet https://raw.githubusercontent.com/scoony/plex_sort/main/MUI/$user_lang.lang -O $log_folder/MUI/$user_lang.lang >/dev/null
 else
-  printf "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[0m[\e[42m  \e[0m] %-57s  \e[0m] \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Language file up to date ($user_lang)"
+  $printf1 "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[0m[\e[42m  \e[0m] %-56s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Language file up to date ($user_lang)" 2>/dev/null
 fi
 source $log_folder/MUI/$user_lang.lang
 
@@ -86,7 +93,7 @@ my_settings_variables="crontab_entry mount_folder plex_folder download_folder ex
 for script_variable in $my_settings_variables ; do
   if [[ "$my_config" =~ "$script_variable" ]]; then
     echo $script_variable"=\"\"" >> $my_config
-    printf "\e[46m\u25B6\u25B6  \e[0m [\e[41m  \e[0m] %-57s  \e[0m] \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Config file updated, new variable added ($script_variable)"
+    printf "\e[46m\u25B6\u25B6  \e[0m [\e[41m  \e[0m] %-56s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Config file updated, new variable added ($script_variable)"
     config_updated="1"
   fi
 done
@@ -94,13 +101,13 @@ filebot_folders=`ls "$download_folder" | grep -i "filebot"`
 for folder in $filebot_folders ; do
   if [[ "$my_config" =~ "$folder" ]]; then
     echo $folder"=\"\"" >> $my_config
-    printf "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[0m[\e[41m  \e[0m] %-57s  \e[0m] \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Config file updated, new folder detected ($folder)"
+    printf "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[0m[\e[41m  \e[0m] %-56s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Config file updated, new folder detected ($folder)"
     echo "... config file updated"
     config_updated="1"
   fi
 done
 if [[ "$config_updated" != "1" ]]; then
-  printf "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[0m[\e[42m  \e[0m] %-57s  \e[0m] \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Config file is up to date"
+  $printf1 "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[0m[\e[42m  \e[0m] %-56s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Config file is up to date" 2>/dev/null
 fi
 
 printf "\e[46m\u25B6\u25B6  \e[0m \e[46m  %62s  \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Version: 0.1"
@@ -110,14 +117,14 @@ echo ""                                    ## space in between title and section
 if [[ "$mui_root_title" == "" ]]; then          ## MUI
   mui_root_title="Check account used"           ##
 fi                                              ##
-printf "$ui_tag_section" "$mui_root_title"
+$printf1 "$ui_tag_section" "$mui_root_title" 2>/dev/null
 if [[ "$EUID" == "0" ]] || [[ "$sudo" != "" ]]; then
   if [[ "$mui_root_used" == "" ]]; then         ## MUI
     mui_root_used="Root privileges granted"     ##
   fi                                            ##
-  echo -e "$ui_tag_ok $mui_root_used"
+  $echo1 -e "$ui_tag_ok $mui_root_used" 2>/dev/null
   native_sudo="1"
-  echo ""
+  $echo1 "" 2>/dev/null
 else
   if [[ ! -f $log_folder/.no-root ]] && [[ "$sudo" == "" ]]; then
     if [[ "$mui_root_question" == "" ]]; then                                               ## MUI
@@ -139,11 +146,11 @@ else
 fi
 
 ## Install / Check dependencies
-printf "$ui_tag_section" "Install / Check dependencies"
+$printf1 "$ui_tag_section" "Install / Check dependencies" 2>/dev/null
 my_dependencies="filebot curl wget awk trash-put"
 for dependency in $my_dependencies ; do
   if $dependency -help > /dev/null 2>/dev/null ; then
-    echo -e "$ui_tag_ok Dependency: $dependency"
+    $echo1 -e "$ui_tag_ok Dependency: $dependency" 2>/dev/null
   else
     echo -e "$ui_tag_bad Dependency missing: $dependency"
     echo "... trying to install..."
@@ -157,10 +164,10 @@ for dependency in $my_dependencies ; do
     fi
   fi
 done
-echo ""
+$echo1 "" 2>/dev/null
 
 ## Check FileBot Licence
-printf "$ui_tag_section" "Check FileBot licence"
+$printf1 "$ui_tag_section" "Check FileBot licence" 2>/dev/null
 if [[ ! -f $log_folder/.licence ]]; then
   echo ""
   check_local_licence=`filebot -script fn:sysinfo script | grep "Valid-Until"`
@@ -168,7 +175,7 @@ if [[ ! -f $log_folder/.licence ]]; then
     locate_filebot_licence=`locate -ir "filebot*.*.psm$"`
     for licence in $locate_filebot_licence ; do
       filebot_licence_validity=`cat $locate_filebot_licence | grep "Valid-Until" | awk '{ print $2 }'`
-      echo "$filebot_licence_validity $locate_filebot_licence" >> $log_folder/licences-choice.log     
+      echo "$filebot_licence_validity $locate_filebot_licence" >> $log_folder/licences-choice.log
     done
     licence_final=`sort $log_folder/licences-choice.log | tail -n1 | awk '{ print $2 }'`
     filebot --license $licence_final
@@ -179,8 +186,8 @@ if [[ ! -f $log_folder/.licence ]]; then
   fi
 else
   filebot_date=`cat $log_folder/.licence | awk 'END {print $NF}'`
-  echo -e "$ui_tag_ok Filebot is activated ($filebot_date"
-  echo ""
+  $echo1 -e "$ui_tag_ok Filebot is activated ($filebot_date" 2>/dev/null
+  $echo1 "" 2>/dev/null
 fi
 
 ## Update and check web
