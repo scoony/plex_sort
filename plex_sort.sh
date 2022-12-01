@@ -81,6 +81,7 @@ source $log_folder/MUI/$user_lang.lang
 ui_tag_ok="[\e[42m \u2713 \e[0m]"
 ui_tag_bad="[\e[41m \u2713 \e[0m]"
 ui_tag_warning="[\e[43m \u2713 \e[0m]"
+ui_tag_processed="[\e[43m \u2666 \e[0m]"
 ui_tag_root="[\e[47m \u2713 \e[0m]"
 ui_tag_section="\e[44m\u2263\u2263  \e[0m \e[44m \e[1m %-62s  \e[0m \e[44m  \e[0m \e[44m \e[0m \e[34m\u2759\e[0m\n"
 
@@ -235,15 +236,14 @@ for plex_path in $plex_folders ; do
   if [[ ! "$exclude_folders" =~ "$plex_path" ]]; then
     plex_path_free=`df -k --output=avail "$plex_path" | tail -n1`
     plex_path_free_human=`df -kh --output=avail "$plex_path" | tail -n1`
-    echo -e "$ui_tag_ok Plex folder: $plex_path (free: $plex_path_free_human)"
+    $echo1 -e "$ui_tag_ok Plex folder: $plex_path (free: $plex_path_free_human)" 2>/dev/null
     echo "$plex_path_free $plex_path" >> $log_folder/temp.log
-##    echo ""
   fi
 done
 best_plex_target=`sort -n $log_folder/temp.log | awk 'END {print $NF}'`
 rm $log_folder/temp.log
 best_free=`df -kh --output=avail "$best_plex_target" | tail -n1`
-echo ""
+$echo1 "" 2>/dev/null
 echo -e "$ui_tag_ok Best target: $best_plex_target ($best_free )"
 echo ""
 
@@ -253,10 +253,10 @@ filebot_folders=`ls "$download_folder" | grep -i "filebot"`
 for folder in $filebot_folders ; do
   echo -e "$ui_tag_ok Folder: $folder"
   folder_path=`echo $download_folder"/"$folder`
-  echo -e "$ui_tag_ok Path: $folder_path"
+  $echo1 -e "$ui_tag_ok Path: $folder_path" 2>/dev/null
   check_conf=`cat $log_folder/plex_sort.conf | grep "$folder"`
   if [[ "$check_conf" != "" ]]; then
-    echo -e "$ui_tag_ok Config setting: $check_conf"
+    $echo1 -e "$ui_tag_ok Config setting: $check_conf" 2>/dev/null
   else
     echo -e "$ui_tag_bad Folder missing in config"
     echo $folder"=\"\"" >> $my_config
@@ -264,12 +264,12 @@ for folder in $filebot_folders ; do
   fi
   folder_usage=`du -s "$folder_path" 2>/dev/null | awk '{ print $1 }'`
   echo $folder_usage >> $log_folder/temp.log
-  echo ""
+  $echo1 "" 2>/dev/null
 done
 space_required=`cat $log_folder/temp.log | paste -sd+ - | bc`
 space_required_human=`cat $log_folder/temp.log | paste -sd+ - | bc | numfmt --to=iec --from-unit=K`
 rm $log_folder/temp.log
-echo ""
+##echo ""
 echo -e "$ui_tag_ok Space required to store content: $space_required_human"
 echo ""
 
@@ -283,7 +283,7 @@ for folder in $filebot_folders ; do
     echo -e "No config provided"
   else
     target_folder_path=`echo $best_plex_target""$target_conf`
-    echo -e "$ui_tag_ok Content destination: $target_folder_path"
+    $echo1 -e "$ui_tag_ok Content destination: $target_folder_path" 2>/dev/null
     if [[ "${folder,,}" =~ "film" ]] || [[ "${folder,,}" =~ "movie" ]]; then
       agent="TheMovieDB"
       format="movieFormat"
@@ -293,7 +293,7 @@ for folder in $filebot_folders ; do
       format="seriesFormat"
       output="{n}/{'$filebot_season_folder '+s.pad(2)}/{n} - {sxe} - {t}"
     fi
-    echo -e "$ui_tag_ok Agent used: $agent"
+    $echo1 -e "$ui_tag_ok Agent used: $agent" 2>/dev/null
     folder_files=`find "$source_folder_path" -type f -iname '*[avi|mp4|mkv]' > $log_folder/$folder.medias.log`
     check_medias=`cat $log_folder/$folder.medias.log`
     if [[ "$check_medias" != "" ]]; then
@@ -310,10 +310,9 @@ for folder in $filebot_folders ; do
 ##          echo "DEBUG: $move_done"
           move_source=`echo "$move_done" |  grep -oP '(?<=from \[).*(?=\] to)'`
           move_target=`echo "$move_done" |  grep -oP '(?<=to \[).*(?=\]$)'`
-          echo -e "$ui_tag_ok File(s) processed:"
-          echo -e "....... Source: $move_source"
-          echo -e "....... Target: $move_target"
-          echo -e ".............."
+          echo -e "$ui_tag_ok File processed:"
+          echo -e "$ui_tag_processed Source: $move_source"
+          echo -e "$ui_tag_processed Target: $move_target"
           new_media="1"
           if [[ "$push_for_move" == "yes" ]]; then
             file_source=`basename "$move_source"`
@@ -325,9 +324,14 @@ for folder in $filebot_folders ; do
         done
       fi
     fi
+  fi
+  if [[ $echo1 != "" ]]; then
     echo ""
   fi
 done
+if [[ "$echo1" == "" ]]; then
+  echo ""
+fi
 
 ## Dupe checker / cleaner
 if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo" == "1" ]]; then
@@ -338,7 +342,7 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
     ##find "$folder_db" –type d -empty
     disk_db=`echo $folder_db | sed 's/\/Plex\///'`
     disk_db_id="$(basename $disk_db)"
-    echo -e "$ui_tag_ok Folder: $folder_db (DB: $disk_db_id.locate.db)"
+    $echo1 -e "$ui_tag_ok Folder: $folder_db (DB: $disk_db_id.locate.db)" 2>/dev/null
     echo $sudo | sudo -kS updatedb -U "$folder_db" -o "$log_folder/$disk_db_id.locate.db" 2>/dev/null
   done
 ##  echo -e "$ui_tag_ok Done"
