@@ -35,8 +35,7 @@ if [[ "$crontab_activation" == "yes" ]]; then
   if [[ "$check_crontab" == "" ]]; then
     crontab -l > $log_folder/cron-save.txt
     crontab -l | { cat; echo "$crontab_entry"; } | crontab -
-    echo "... script installed in cron"
-    $printf1 "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[0m[\e[42m  \e[0m] %-56s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Script installed in cron" 2>/dev/null
+    printf "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[0m[\e[42m  \e[0m] %-56s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Script installed in cron" 2>/dev/null
   elif [[ ${check_crontab:0:1} == '#' ]]; then
     $printf1 "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[0m[\e[41m  \e[0m] %-56s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Script disabled in cron" 2>/dev/null
   else
