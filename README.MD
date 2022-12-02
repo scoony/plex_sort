@@ -12,12 +12,12 @@ This script can be used without Plex, it store your medias for you automatically
 - [x] rename and move media properly
 - [x] update Plex library
 - [x] check dupes
-- [ ] auto-clean download folders
+- [x] auto-clean download folders
 - [x] send push messages
 - [ ] send mails
 - [x] root features thru sudo or root cron
 
-## Features for root only
+## Features for root only (need to check)
 - chmod source folders
 - chmod target folders
 - install automatically script dependencies

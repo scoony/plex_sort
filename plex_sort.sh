@@ -67,7 +67,7 @@ if [[ ! -d $log_folder/MUI ]]; then
   mkdir -p "$log_folder/MUI"
 fi
 user_lang=$(locale | grep LANGUAGE | cut -d= -f2 | cut -d_ -f1)
-md5_lang_local=`md5sum $log_folder/MUI/$user_lang.lang | cut -f1 -d" "`
+md5_lang_local=`md5sum $log_folder/MUI/$user_lang.lang | cut -f1 -d" " 2>/dev/null`
 md5_lang_remote=`curl -s https://raw.githubusercontent.com/scoony/plex_sort/main/MUI/$user_lang.lang | md5sum | cut -f1 -d" "`
 if [[ ! -f $log_folder/MUI/$user_lang.lang ]] || [[ "$md5_lang_local" != "$md5_lang_remote" ]]; then
   printf "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[0m[\e[43m  \e[0m] %-56s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Language file updated ($user_lang)"
@@ -108,6 +108,8 @@ for folder in $filebot_folders ; do
 done
 if [[ "$config_updated" != "1" ]]; then
   $printf1 "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[0m[\e[42m  \e[0m] %-56s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Config file is up to date" 2>/dev/null
+else
+  echo "Edit your config..."
 fi
 
 printf "\e[46m\u25B6\u25B6  \e[0m \e[46m  %62s  \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Version: 0.1"
@@ -153,8 +155,8 @@ for dependency in $my_dependencies ; do
     $echo1 -e "$ui_tag_ok Dependency: $dependency" 2>/dev/null
   else
     echo -e "$ui_tag_bad Dependency missing: $dependency"
-    echo "... trying to install..."
-    apt install $dependency -y 2>/dev/null
+    echo -e "$tag_ui_warning Installing dependency..."
+    echo $sudo | sudo -kS apt install $dependency -y 2>/dev/null
     if $dependency -help > /dev/null 2>/dev/null ; then
       echo -e "$ui_tag_ok Dependency: $dependency"
     else
@@ -237,6 +239,10 @@ for plex_path in $plex_folders ; do
     plex_path_free=`df -k --output=avail "$plex_path" | tail -n1`
     plex_path_free_human=`df -kh --output=avail "$plex_path" | tail -n1`
     $echo1 -e "$ui_tag_ok Plex folder: $plex_path (free: $plex_path_free_human)" 2>/dev/null
+    if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo" == "1" ]]; then
+      echo $sudo | sudo -kS chmod -R 777 "$plex_path" 2>/dev/null
+      $echo1 -e "$ui_tag_processed chmod 777 -R completed" 2>/dev/null
+    fi
     echo "$plex_path_free $plex_path" >> $log_folder/temp.log
   fi
 done
@@ -254,6 +260,10 @@ for folder in $filebot_folders ; do
   echo -e "$ui_tag_ok Folder: $folder"
   folder_path=`echo $download_folder"/"$folder`
   $echo1 -e "$ui_tag_ok Path: $folder_path" 2>/dev/null
+  if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo" == "1" ]]; then
+  echo $sudo | sudo -kS chmod -R 777 "$folder_path" 2>/dev/null
+    $echo1 -e "$ui_tag_processed chmod 777 -R completed" 2>/dev/null
+  fi
   check_conf=`cat $log_folder/plex_sort.conf | grep "$folder"`
   if [[ "$check_conf" != "" ]]; then
     $echo1 -e "$ui_tag_ok Config setting: $check_conf" 2>/dev/null
