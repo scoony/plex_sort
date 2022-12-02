@@ -261,7 +261,7 @@ for folder in $filebot_folders ; do
   folder_path=`echo $download_folder"/"$folder`
   $echo1 -e "$ui_tag_ok Path: $folder_path" 2>/dev/null
   if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo" == "1" ]]; then
-  echo $sudo | sudo -kS chmod -R 777 "$folder_path" 2>/dev/null
+    echo $sudo | sudo -kS chmod -R 777 "$folder_path" 2>/dev/null
     $echo1 -e "$ui_tag_processed chmod 777 -R completed" 2>/dev/null
   fi
   check_conf=`cat $log_folder/plex_sort.conf | grep "$folder"`
