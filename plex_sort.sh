@@ -82,6 +82,7 @@ ui_tag_ok="[\e[42m \u2713 \e[0m]"
 ui_tag_bad="[\e[41m \u2713 \e[0m]"
 ui_tag_warning="[\e[43m \u2713 \e[0m]"
 ui_tag_processed="[\e[43m \u2666 \e[0m]"
+ui_tag_chmod="[\e[43m \u279C \e[0m]" 
 ui_tag_root="[\e[47m \u2713 \e[0m]"
 ui_tag_section="\e[44m\u2263\u2263  \e[0m \e[44m \e[1m %-62s  \e[0m \e[44m  \e[0m \e[44m \e[0m \e[34m\u2759\e[0m\n"
 
@@ -223,11 +224,13 @@ if curl -s -m 3 --head --request GET https://www.thetvdb.com > /dev/null; then
   echo -e "$ui_tag_ok TheTVDB is online."
 else
   echo -e "$ui_tag_bad TheTVDB unreachable."
+  TheTVDB="1"
 fi
-if curl -s -m 3 --head --request GET https://www themoviedb.org.com > /dev/null; then
+if curl -s -m 3 --head --request GET https://www.themoviedb.org.com > /dev/null; then
   echo -e "$ui_tag_ok TheMovieDB is online."
 else
   echo -e "$ui_tag_bad TheMovieDB unreachable."
+  TheMovieDB="1"
 fi
 echo ""
 
@@ -241,7 +244,8 @@ for plex_path in $plex_folders ; do
     $echo1 -e "$ui_tag_ok Plex folder: $plex_path (free: $plex_path_free_human)" 2>/dev/null
     if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo" == "1" ]]; then
       echo $sudo | sudo -kS chmod -R 777 "$plex_path" 2>/dev/null
-      $echo1 -e "$ui_tag_processed chmod 777 -R completed" 2>/dev/null
+      $echo1 -e "$ui_tag_chmod new rights (read/write/execute) applied" 2>/dev/null
+      $echo1 "" 2>/dev/null
     fi
     echo "$plex_path_free $plex_path" >> $log_folder/temp.log
   fi
@@ -262,7 +266,7 @@ for folder in $filebot_folders ; do
   $echo1 -e "$ui_tag_ok Path: $folder_path" 2>/dev/null
   if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo" == "1" ]]; then
     echo $sudo | sudo -kS chmod -R 777 "$folder_path" 2>/dev/null
-    $echo1 -e "$ui_tag_processed chmod 777 -R completed" 2>/dev/null
+    $echo1 -e "$ui_tag_chmod new rights (read/write/execute) applied" 2>/dev/null
   fi
   check_conf=`cat $log_folder/plex_sort.conf | grep "$folder"`
   if [[ "$check_conf" != "" ]]; then
@@ -304,35 +308,40 @@ for folder in $filebot_folders ; do
       output="{n}/{'$filebot_season_folder '+s.pad(2)}/{n} - {sxe} - {t}"
     fi
     $echo1 -e "$ui_tag_ok Agent used: $agent" 2>/dev/null
-    folder_files=`find "$source_folder_path" -type f -iname '*[avi|mp4|mkv]' > $log_folder/$folder.medias.log`
-    check_medias=`cat $log_folder/$folder.medias.log`
-    if [[ "$check_medias" != "" ]]; then
-      filebot -script fn:amc -non-strict --conflict override --lang $filebot_language --encoding UTF-8 --action move "$source_folder_path" --def "$format=$output" --output "$target_folder_path" 2>/dev/null > $log_folder/filebot_output.txt
-      cat "$log_folder/filebot_output.txt" | grep "\[MOVE\]" > $log_folder/move_done.txt
-      filebot_moves=()
-      while IFS= read -r -d $'\n'; do
-      filebot_moves+=("$REPLY")
-      done <$log_folder/move_done.txt
-      rm $log_folder/move_done.txt
-      if [[ "${filebot_moves[@]}" != "" ]]; then
-##        echo "DEBUG: Move detected"
-        for move_done in "${filebot_moves[@]}"; do
-##          echo "DEBUG: $move_done"
-          move_source=`echo "$move_done" |  grep -oP '(?<=from \[).*(?=\] to)'`
-          move_target=`echo "$move_done" |  grep -oP '(?<=to \[).*(?=\]$)'`
-          echo -e "$ui_tag_ok File processed:"
-          echo -e "$ui_tag_processed Source: $move_source"
-          echo -e "$ui_tag_processed Target: $move_target"
-          new_media="1"
-          if [[ "$push_for_move" == "yes" ]]; then
-            file_source=`basename "$move_source"`
-            file_target=`basename "$move_target"`
-            target_folder=`dirname "$move_target"`
-            my_message=` echo -e "[ <b>MEDIA MOVED</b> ] [ <b>$target_conf</b> ]\n\n<b>Source Name: </b>$file_source\n<b>Target Name: </b>$file_target\n\n<b>Destination: </b>$target_folder"`
-            push-message "Plex Sort" "$my_message"
-          fi
-        done
+    allow_agent=${!agent}
+    if [[ "$allow_agent" != "1" ]]; then
+      folder_files=`find "$source_folder_path" -type f -iname '*[avi|mp4|mkv]' > $log_folder/$folder.medias.log`
+      check_medias=`cat $log_folder/$folder.medias.log`
+      if [[ "$check_medias" != "" ]]; then
+        filebot -script fn:amc -non-strict --conflict override --lang $filebot_language --encoding UTF-8 --action move "$source_folder_path" --def "$format=$output" --output "$target_folder_path" 2>/dev/null > $log_folder/filebot_output.txt
+        cat "$log_folder/filebot_output.txt" | grep "\[MOVE\]" > $log_folder/move_done.txt
+        filebot_moves=()
+        while IFS= read -r -d $'\n'; do
+        filebot_moves+=("$REPLY")
+        done <$log_folder/move_done.txt
+        rm $log_folder/move_done.txt
+        if [[ "${filebot_moves[@]}" != "" ]]; then
+##          echo "DEBUG: Move detected"
+          for move_done in "${filebot_moves[@]}"; do
+##            echo "DEBUG: $move_done"
+            move_source=`echo "$move_done" |  grep -oP '(?<=from \[).*(?=\] to)'`
+            move_target=`echo "$move_done" |  grep -oP '(?<=to \[).*(?=\]$)'`
+            echo -e "$ui_tag_ok File processed:"
+            echo -e "$ui_tag_processed Source: $move_source"
+            echo -e "$ui_tag_processed Target: $move_target"
+            new_media="1"
+            if [[ "$push_for_move" == "yes" ]]; then
+              file_source=`basename "$move_source"`
+              file_target=`basename "$move_target"`
+              target_folder=`dirname "$move_target"`
+              my_message=` echo -e "[ <b>MEDIA MOVED</b> ] [ <b>$target_conf</b> ]\n\n<b>Source Name: </b>$file_source\n<b>Target Name: </b>$file_target\n\n<b>Destination: </b>$target_folder"`
+              push-message "Plex Sort" "$my_message"
+            fi
+          done
+        fi
       fi
+    else
+      echo -e "$ui_tag_bad $agent is offline, skipping"
     fi
   fi
   if [[ $echo1 != "" ]]; then
