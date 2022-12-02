@@ -413,6 +413,17 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
   echo ""
 fi
 
+## Clean Download folders
+printf "$ui_tag_section" "Clean download folders"
+filebot_folders=`ls "$download_folder" | grep -i "filebot"`
+for folder in $filebot_folders ; do
+  echo -e "$ui_tag_ok Cleaning $folder"
+  folder_path=`echo $download_folder"/"$folder`
+  find "$folder_path" -type f -not -iregex '.*\.\(mkv\|avi\|mp4\|m4v\|mpg\|divx\|ts\|ogm\)' -delete
+  find "$folder_path" -not -path "$folder_path" -type d -empty -delete
+done
+echo ""
+
 ## Plex Update library
 if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo" == "1" ]]; then
   printf "$ui_tag_section" "Update Plex library"
