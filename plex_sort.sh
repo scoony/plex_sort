@@ -226,7 +226,7 @@ else
   echo -e "$ui_tag_bad TheTVDB unreachable."
   TheTVDB="1"
 fi
-if curl -s -m 3 --head --request GET https://www.themoviedb.org.com > /dev/null; then
+if curl -s -m 3 --head --request GET https://www.themoviedb.org > /dev/null; then
   echo -e "$ui_tag_ok TheMovieDB is online."
 else
   echo -e "$ui_tag_bad TheMovieDB unreachable."
