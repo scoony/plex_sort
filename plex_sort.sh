@@ -1,8 +1,20 @@
 #!/bin/bash
 
+#######################
+## Update Only
+if [[ "$@" =~ "--force-update" ]]; then
+  echo "PLEX SORT: Force update"
+  echo "Script will be overwrited in /opt/script"
+  curl -s -m 3 --create-dir -o "/opt/scripts/plex_sort.sh" 'https://raw.githubusercontent.com/scoony/plex_sort/main/plex_sort.sh'
+  echo "Process completed... exit"
+  exit 1
+fi
+
 
 printf "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[1m %-62s  \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "PLEX SORT"
 
+
+#######################
 ## Check if this script is running
 check_dupe=$(ps -ef | grep "$0" | grep -v grep | wc -l | xargs)
 if [[ "$check_dupe" > "2" ]]; then
@@ -10,6 +22,8 @@ if [[ "$check_dupe" > "2" ]]; then
   exit 1
 fi
 
+
+#######################
 ## Required for logs and conf
 if [[ "$log_folder" == "" ]]; then
   log_folder="$HOME/.config/plex_sort"
@@ -20,12 +34,16 @@ fi
 my_config="$HOME/.config/plex_sort/plex_sort.conf"
 source $HOME/.config/plex_sort/plex_sort.conf
 
+
+#######################
 ## Display Mode
 if [[ "$display_mode" == "full" ]] || [[ "$@" =~ "--mode-full" ]]; then
   echo1="echo"
   printf1="printf"
 fi
 
+
+#######################
 ## Crontab check and/or activation
 if [[ "$crontab_activation" == "yes" ]]; then
   if [[ "$crontab_entry" == "" ]]; then
@@ -43,6 +61,8 @@ if [[ "$crontab_activation" == "yes" ]]; then
   fi
 fi
 
+
+#######################
 ## Push feature
 push-message() {
   push_title=$1
@@ -62,6 +82,8 @@ push-message() {
   done
 }
 
+
+#######################
 ## MUI Feature
 if [[ ! -d $log_folder/MUI ]]; then
   mkdir -p "$log_folder/MUI"
@@ -71,21 +93,25 @@ md5_lang_local=`md5sum $log_folder/MUI/$user_lang.lang | cut -f1 -d" " 2>/dev/nu
 md5_lang_remote=`curl -s https://raw.githubusercontent.com/scoony/plex_sort/main/MUI/$user_lang.lang | md5sum | cut -f1 -d" "`
 if [[ ! -f $log_folder/MUI/$user_lang.lang ]] || [[ "$md5_lang_local" != "$md5_lang_remote" ]]; then
   printf "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[0m[\e[43m  \e[0m] %-56s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Language file updated ($user_lang)"
-  wget --quiet https://raw.githubusercontent.com/scoony/plex_sort/main/MUI/$user_lang.lang -O $log_folder/MUI/$user_lang.lang >/dev/null
+  curl -s -m 3 --create-dir -o "$log_folder/MUI/$user_lang.lang" 'https://raw.githubusercontent.com/scoony/plex_sort/main/MUI/$user_lang.lang'
 else
   $printf1 "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[0m[\e[42m  \e[0m] %-56s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Language file up to date ($user_lang)" 2>/dev/null
 fi
 source $log_folder/MUI/$user_lang.lang
 
+
+#######################
 ## UI Design
 ui_tag_ok="[\e[42m \u2713 \e[0m]"
 ui_tag_bad="[\e[41m \u2713 \e[0m]"
 ui_tag_warning="[\e[43m \u2713 \e[0m]"
 ui_tag_processed="[\e[43m \u2666 \e[0m]"
-ui_tag_chmod="[\e[43m \u279C \e[0m]" 
+ui_tag_chmod="[\e[43m \u270E \e[0m]" 
 ui_tag_root="[\e[47m \u2713 \e[0m]"
 ui_tag_section="\e[44m\u2263\u2263  \e[0m \e[44m \e[1m %-62s  \e[0m \e[44m  \e[0m \e[44m \e[0m \e[34m\u2759\e[0m\n"
 
+
+#######################
 ## Generate conf and/or load conf
 if [[ ! -f "$my_config" ]]; then
   touch $my_config
@@ -115,7 +141,9 @@ fi
 
 printf "\e[46m\u25B6\u25B6  \e[0m \e[46m  %62s  \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Version: 0.1"
 echo ""                                    ## space in between title and sections
- 
+
+
+#######################
 ## Check if root for extra features
 if [[ "$mui_root_title" == "" ]]; then          ## MUI
   mui_root_title="Check account used"           ##
@@ -148,9 +176,11 @@ else
   echo ""
 fi
 
+
+#######################
 ## Install / Check dependencies
 $printf1 "$ui_tag_section" "Install / Check dependencies" 2>/dev/null
-my_dependencies="filebot curl wget awk trash-put"
+my_dependencies="filebot curl awk trash-put"
 for dependency in $my_dependencies ; do
   if $dependency -help > /dev/null 2>/dev/null ; then
     $echo1 -e "$ui_tag_ok Dependency: $dependency" 2>/dev/null
@@ -169,6 +199,8 @@ for dependency in $my_dependencies ; do
 done
 $echo1 "" 2>/dev/null
 
+
+#######################
 ## Check FileBot Licence
 $printf1 "$ui_tag_section" "Check FileBot licence" 2>/dev/null
 if [[ ! -f $log_folder/.licence ]]; then
@@ -193,6 +225,8 @@ else
   $echo1 "" 2>/dev/null
 fi
 
+
+#######################
 ## Update and check web
 printf "$ui_tag_section" "Internet availability and Update"
 if curl -s -m 3 --head --request GET https://github$update_allowed.com > /dev/null; then 
@@ -202,7 +236,7 @@ if curl -s -m 3 --head --request GET https://github$update_allowed.com > /dev/nu
     echo -e "$ui_tag_bad Update Available"
     echo "... ---"
     function script_upgrade {
-      wget --quiet https://raw.githubusercontent.com/scoony/plex_sort/main/plex_sort.sh -O /opt/scripts/plex_sort.sh
+      curl -s -m 3 --create-dir -o "/opt/scripts/plex_sort.sh" 'https://raw.githubusercontent.com/scoony/plex_sort/main/plex_sort.sh'
       chmod +x /opt/scripts/plex_sort.sh
       echo -e "$ui_tag_ok Update Completed, restart script"
 ## Bonne approche mais fonctionne pas
@@ -234,6 +268,8 @@ else
 fi
 echo ""
 
+
+#######################
 ## Detect Plex folders and select best target
 printf "$ui_tag_section" "Detect Plex folders"
 plex_folders=`ls -d $mount_folder/*/$plex_folder/`
@@ -257,6 +293,8 @@ $echo1 "" 2>/dev/null
 echo -e "$ui_tag_ok Best target: $best_plex_target ($best_free )"
 echo ""
 
+
+#######################
 ## Detect download folders and space required
 printf "$ui_tag_section" "Detect download folders"
 filebot_folders=`ls "$download_folder" | grep -i "filebot"`
@@ -287,6 +325,8 @@ rm $log_folder/temp.log
 echo -e "$ui_tag_ok Space required to store content: $space_required_human"
 echo ""
 
+
+#######################
 ## Here we go
 printf "$ui_tag_section" "Sorting process"
 for folder in $filebot_folders ; do
@@ -352,6 +392,8 @@ if [[ "$echo1" == "" ]]; then
   echo ""
 fi
 
+
+#######################
 ## Dupe checker / cleaner
 if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo" == "1" ]]; then
   printf "$ui_tag_section" "Dupe checker/cleaner"
@@ -432,6 +474,8 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
   echo ""
 fi
 
+
+#######################
 ## Clean Download folders
 printf "$ui_tag_section" "Clean download folders"
 filebot_folders=`ls "$download_folder" | grep -i "filebot"`
@@ -443,6 +487,8 @@ for folder in $filebot_folders ; do
 done
 echo ""
 
+
+#######################
 ## Plex Update library
 if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo" == "1" ]]; then
   printf "$ui_tag_section" "Update Plex library"
@@ -458,8 +504,7 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
   if [[ "$new_media" == "1" ]]; then
     echo -e "$ui_tag_warning Update Plex library"
     url_refresh=`echo "http://127.0.0.1:"$plex_port"/library/sections/all/refresh?X-Plex-Token="$plex_token`
-      wget -q "$url_refresh"
-      rm refresh*
+      curl -s '$url_refresh'
   else
     echo -e "$ui_tag_ok No need to update"
   fi
