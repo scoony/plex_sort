@@ -117,8 +117,9 @@ if [[ ! -f "$my_config" ]]; then
   touch $my_config
 fi
 my_settings_variables="display_mode crontab_entry mount_folder plex_folder download_folder exclude_folders filebot_language filebot_season_folder log_folder token_app target_1 target_2 push_for_move push_for_cleaning update_allowed"
+my_config_file=`cat $my_config`
 for script_variable in $my_settings_variables ; do
-  if [[ ! "${!my_config}" =~ "$script_variable" ]]; then
+  if [[ ! "$my_config_file" =~ "$script_variable" ]]; then
     echo $script_variable"=\"\"" >> $my_config
     printf "\e[46m\u25B6\u25B6  \e[0m [\e[41m  \e[0m] %-56s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Config file updated, new variable added ($script_variable)"
     config_updated="1"
@@ -126,7 +127,7 @@ for script_variable in $my_settings_variables ; do
 done
 filebot_folders=`ls "$download_folder" | grep -i "filebot"`
 for folder in $filebot_folders ; do
-  if [[ "$my_config" =~ "$folder" ]]; then
+  if [[ ! "$my_config_file" =~ "$folder" ]]; then
     echo $folder"=\"\"" >> $my_config
     printf "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[0m[\e[41m  \e[0m] %-56s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Config file updated, new folder detected ($folder)"
     echo "... config file updated"
@@ -137,6 +138,7 @@ if [[ "$config_updated" != "1" ]]; then
   $printf1 "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[0m[\e[42m  \e[0m] %-56s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Config file is up to date" 2>/dev/null
 else
   echo "Edit your config..."
+  exit 1
 fi
 
 printf "\e[46m\u25B6\u25B6  \e[0m \e[46m  %62s  \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Version: 0.1"
