@@ -118,7 +118,7 @@ if [[ ! -f "$my_config" ]]; then
 fi
 my_settings_variables="display_mode crontab_entry mount_folder plex_folder download_folder exclude_folders filebot_language filebot_season_folder log_folder token_app target_1 target_2 push_for_move push_for_cleaning update_allowed"
 for script_variable in $my_settings_variables ; do
-  if [[ "$my_config" =~ "$script_variable" ]]; then
+  if [[ ! "${!my_config}" =~ "$script_variable" ]]; then
     echo $script_variable"=\"\"" >> $my_config
     printf "\e[46m\u25B6\u25B6  \e[0m [\e[41m  \e[0m] %-56s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Config file updated, new variable added ($script_variable)"
     config_updated="1"
@@ -493,7 +493,7 @@ echo ""
 if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo" == "1" ]]; then
   printf "$ui_tag_section" "Update Plex library"
   if [[ "$plex_token" == "" ]] || [[ "$plex_port" == "" ]]; then
-    plex_pref=`locate Preferences.xml | grep plexmediaserver`
+    plex_pref=`locate Preferences.xml | grep plexmediaserver | head -n1`
     plex_token_new=`echo $sudo | sudo -kS cat "$plex_pref" 2>/dev/null | grep -o 'Token[^ ]*' | cut -d'"' -f 2`
     echo "plex_token=\"$plex_token_new\"" >> $my_config
     echo -e "$ui_tag_ok Plex Token: $plex_token_new"
