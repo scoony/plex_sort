@@ -84,6 +84,24 @@ push-message() {
 
 
 #######################
+## Push feature
+display_in_progress() {
+  process=$1
+  display_message=$2
+  mon_printf="\r                                                                             "
+  spin='-\|/'
+  i=0
+  while kill -0 $process 2>/dev/null
+  do
+    i=$(( (i+1) %4 ))
+    printf "\r$display_message... ${spin:$i:1}"
+    sleep .1
+  done
+  printf "$mon_printf" && printf "\r"
+}
+
+
+#######################
 ## MUI Feature
 if [[ ! -d $log_folder/MUI ]]; then
   mkdir -p "$log_folder/MUI"
@@ -355,7 +373,9 @@ for folder in $filebot_folders ; do
       folder_files=`find "$source_folder_path" -type f -iname '*[avi|mp4|mkv]' > $log_folder/$folder.medias.log`
       check_medias=`cat $log_folder/$folder.medias.log`
       if [[ "$check_medias" != "" ]]; then
-        filebot -script fn:amc -non-strict --conflict override --lang $filebot_language --encoding UTF-8 --action move "$source_folder_path" --def "$format=$output" --output "$target_folder_path" 2>/dev/null > $log_folder/filebot_output.txt
+        filebot -script fn:amc -non-strict --conflict override --lang $filebot_language --encoding UTF-8 --action move "$source_folder_path" --def "$format=$output" --output "$target_folder_path" 2>/dev/null > $log_folder/filebot_output.txt &
+        pid=$!
+        display_in_progress $pid "$ui_tag_ok Process in progress"
         cat "$log_folder/filebot_output.txt" | grep "\[MOVE\]" > $log_folder/move_done.txt
         filebot_moves=()
         while IFS= read -r -d $'\n'; do
@@ -399,15 +419,17 @@ fi
 ## Dupe checker / cleaner
 if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo" == "1" ]]; then
   printf "$ui_tag_section" "Dupe checker/cleaner"
-  echo -e "$ui_tag_ok Generating Plex content DBs"
   for folder_db in $plex_folders ; do
     ## RETIRER LES DOSSIERS VIDES - ATTENTION SOUCIS
     ##find "$folder_db" –type d -empty
     disk_db=`echo $folder_db | sed 's/\/Plex\///'`
     disk_db_id="$(basename $disk_db)"
     $echo1 -e "$ui_tag_ok Folder: $folder_db (DB: $disk_db_id.locate.db)" 2>/dev/null
-    echo $sudo | sudo -kS updatedb -U "$folder_db" -o "$log_folder/$disk_db_id.locate.db" 2>/dev/null
+    echo $sudo | sudo -kS updatedb -U "$folder_db" -o "$log_folder/$disk_db_id.locate.db" 2>/dev/null &
+    pid=$!
+    display_in_progress $pid "$ui_tag_ok Generating Plex content DBs"
   done
+  echo -e "$ui_tag_ok Generating Plex content DBs"
 ##  echo -e "$ui_tag_ok Done"
   locate_dbs=`ls $log_folder/*.locate.db`
   locate_path=`echo $locate_dbs | sed 's/ /:/g'`
@@ -482,10 +504,14 @@ fi
 printf "$ui_tag_section" "Clean download folders"
 filebot_folders=`ls "$download_folder" | grep -i "filebot"`
 for folder in $filebot_folders ; do
-  echo -e "$ui_tag_ok Cleaning $folder"
   folder_path=`echo $download_folder"/"$folder`
-  find "$folder_path" -type f -not -iregex '.*\.\(mkv\|avi\|mp4\|m4v\|mpg\|divx\|ts\|ogm\)' -delete
-  find "$folder_path" -not -path "$folder_path" -type d -empty -delete
+  find "$folder_path" -type f -not -iregex '.*\.\(mkv\|avi\|mp4\|m4v\|mpg\|divx\|ts\|ogm\)' -delete &
+  pid=$!
+  display_in_progress $pid "$ui_tag_ok Cleaning $folder"
+  find "$folder_path" -not -path "$folder_path" -type d -empty -delete &
+  pid=$!
+  display_in_progress $pid "$ui_tag_ok Cleaning $folder"
+  echo -e "$ui_tag_ok Cleaning $folder"
 done
 echo ""
 
