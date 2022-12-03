@@ -506,8 +506,8 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
   if [[ "$new_media" == "1" ]]; then
     echo -e "$ui_tag_warning Update Plex library"
     url_refresh=`echo "http://127.0.0.1:"$plex_port"/library/sections/all/refresh?X-Plex-Token="$plex_token`
-      curl -s "$url_refresh"
-      rm refresh* 2>/dev/null
+    curl -s "$url_refresh"
+    rm refresh* 2>/dev/null
   else
     echo -e "$ui_tag_ok No need to update"
   fi
