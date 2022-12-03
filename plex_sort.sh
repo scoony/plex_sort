@@ -5,7 +5,7 @@
 if [[ "$@" =~ "--force-update" ]]; then
   echo "PLEX SORT: Force update"
   echo "Script will be overwrited in /opt/script"
-  curl -s -m 3 --create-dir -o "/opt/scripts/plex_sort.sh" 'https://raw.githubusercontent.com/scoony/plex_sort/main/plex_sort.sh'
+  curl -s -m 3 --create-dir -o "/opt/scripts/plex_sort.sh" "https://raw.githubusercontent.com/scoony/plex_sort/main/plex_sort.sh"
   echo "Process completed... exit"
   exit 1
 fi
@@ -88,12 +88,12 @@ push-message() {
 if [[ ! -d $log_folder/MUI ]]; then
   mkdir -p "$log_folder/MUI"
 fi
-user_lang=$(locale | grep LANGUAGE | cut -d= -f2 | cut -d_ -f1)
+user_lang=$(locale | grep "LANG=" | cut -d= -f2 | cut -d_ -f1)
 md5_lang_local=`md5sum $log_folder/MUI/$user_lang.lang | cut -f1 -d" " 2>/dev/null`
 md5_lang_remote=`curl -s https://raw.githubusercontent.com/scoony/plex_sort/main/MUI/$user_lang.lang | md5sum | cut -f1 -d" "`
 if [[ ! -f $log_folder/MUI/$user_lang.lang ]] || [[ "$md5_lang_local" != "$md5_lang_remote" ]]; then
   printf "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[0m[\e[43m  \e[0m] %-56s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Language file updated ($user_lang)"
-  curl -s -m 3 --create-dir -o "$log_folder/MUI/$user_lang.lang" 'https://raw.githubusercontent.com/scoony/plex_sort/main/MUI/$user_lang.lang'
+  curl -s -m 3 --create-dir -o "$log_folder/MUI/$user_lang.lang" "https://raw.githubusercontent.com/scoony/plex_sort/main/MUI/$user_lang.lang"
 else
   $printf1 "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[0m[\e[42m  \e[0m] %-56s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Language file up to date ($user_lang)" 2>/dev/null
 fi
