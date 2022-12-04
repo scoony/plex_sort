@@ -84,19 +84,35 @@ push-message() {
 
 
 #######################
-## Push feature
-display_in_progress() {
-  process=$1
-  display_message=$2
-  mon_printf="\r                                                                             "
-  spin='-\|/'
+## Loading spinner
+function display_loading() {
+  pid="$*"
+#  spin='▁▂▃▄▅▆▇█▇▆▅▄▃▂▁'
+#  spin='⠁⠂⠄⡀⢀⠠⠐⠈'
+#  spin='-\|/'
+#  spin="▉▊▋▌▍▎▏▎▍▌▋▊▉"
+#  spin='←↖↑↗→↘↓↙'
+#  spin='▖▘▝▗'
+#  spin='◢◣◤◥'
+#  spin='◰◳◲◱'
+#  spin='◴◷◶◵'
+#  spin='◐◓◑◒'
+#  spin='⣾⣽⣻⢿⡿⣟⣯⣷'
+  if [[ "$loading_spinner" == "" ]]; then
+    spin='⣾⣽⣻⢿⡿⣟⣯⣷'
+  else
+    spin=$loading_spinner
+  fi
+  charwidth=1
   i=0
-  while kill -0 $process 2>/dev/null
-  do
-    i=$(( (i+1) %4 ))
-    printf "\r$display_message... ${spin:$i:1}"
+  tput civis # cursor invisible
+  mon_printf="\r                                                                             "
+  while kill -0 "$pid" 2>/dev/null; do
+    i=$(((i + $charwidth) % ${#spin}))
+    printf "\r[\e[43m \u2713 \e[0m] %10s %s" "Loading..." "${spin:$i:$charwidth}"
     sleep .1
   done
+  tput cnorm
   printf "$mon_printf" && printf "\r"
 }
 
@@ -123,7 +139,7 @@ source $log_folder/MUI/$user_lang.lang
 ui_tag_ok="[\e[42m \u2713 \e[0m]"
 ui_tag_bad="[\e[41m \u2713 \e[0m]"
 ui_tag_warning="[\e[43m \u2713 \e[0m]"
-ui_tag_processed="[\e[43m \u2666 \e[0m]"
+ui_tag_processed="[\e[43m \u2794 \e[0m]"
 ui_tag_chmod="[\e[43m \u270E \e[0m]" 
 ui_tag_root="[\e[47m \u2713 \e[0m]"
 ui_tag_section="\e[44m\u2263\u2263  \e[0m \e[44m \e[1m %-62s  \e[0m \e[44m  \e[0m \e[44m \e[0m \e[34m\u2759\e[0m\n"
@@ -389,9 +405,9 @@ for folder in $filebot_folders ; do
       folder_files=`find "$source_folder_path" -type f -iname '*[avi|mp4|mkv]' > $log_folder/$folder.medias.log`
       check_medias=`cat $log_folder/$folder.medias.log`
       if [[ "$check_medias" != "" ]]; then
-        filebot -script fn:amc -non-strict --conflict override --lang $filebot_language --encoding UTF-8 --action move "$source_folder_path" --def "$format=$output" --output "$target_folder_path" 2>/dev/null > $log_folder/filebot_output.txt &
-        pid=$!
-        display_in_progress $pid "$ui_tag_ok Process in progress"
+        filebot -script fn:amc -non-strict --conflict override --lang $filebot_language --encoding UTF-8 --action move "$source_folder_path" --def "$format=$output" --output "$target_folder_path" 2>/dev/null > $log_folder/filebot_output.txt & display_loading $!
+##        pid=$!
+##        display_in_progress $pid "$ui_tag_ok Process in progress"
         cat "$log_folder/filebot_output.txt" | grep "\[MOVE\]" > $log_folder/move_done.txt
         filebot_moves=()
         while IFS= read -r -d $'\n'; do
@@ -441,9 +457,9 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
     disk_db=`echo $folder_db | sed 's/\/Plex\///'`
     disk_db_id="$(basename $disk_db)"
     $echo1 -e "$ui_tag_ok Folder: $folder_db (DB: $disk_db_id.locate.db)" 2>/dev/null
-    echo $sudo | sudo -kS updatedb -U "$folder_db" -o "$log_folder/$disk_db_id.locate.db" 2>/dev/null &
-    pid=$!
-    display_in_progress $pid "$ui_tag_ok Generating Plex content DBs"
+    echo $sudo | sudo -kS updatedb -U "$folder_db" -o "$log_folder/$disk_db_id.locate.db" 2>/dev/null & display_loading $!
+##    pid=$!
+##    display_in_progress $pid "$ui_tag_ok Generating Plex content DBs"
   done
   echo -e "$ui_tag_ok Generating Plex content DBs"
 ##  echo -e "$ui_tag_ok Done"
@@ -461,7 +477,7 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
   for i in "${my_files[@]}"; do
     basename "$i" >> $log_folder/files_only.txt ## remove paths
     ## remove extension too slow: | rev | cut -f 2- -d '.' | rev
-  done
+  done & display_loading $!
   rm $log_folder/full_plex_clean.txt
   rm $log_folder/full_plex.txt
   cat $log_folder/files_only.txt | sed 's/\.[^.]*$//' | tr '[:upper:]' '[:lower:]' > $log_folder/files_done.txt                           ## remove extensions and everything lower case
@@ -521,12 +537,12 @@ printf "$ui_tag_section" "Clean download folders"
 filebot_folders=`ls "$download_folder" | grep -i "filebot"`
 for folder in $filebot_folders ; do
   folder_path=`echo $download_folder"/"$folder`
-  find "$folder_path" -type f -not -iregex '.*\.\(mkv\|avi\|mp4\|m4v\|mpg\|divx\|ts\|ogm\)' -delete &
-  pid=$!
-  display_in_progress $pid "$ui_tag_ok Cleaning $folder"
-  find "$folder_path" -not -path "$folder_path" -type d -empty -delete &
-  pid=$!
-  display_in_progress $pid "$ui_tag_ok Cleaning $folder"
+  find "$folder_path" -type f -not -iregex '.*\.\(mkv\|avi\|mp4\|m4v\|mpg\|divx\|ts\|ogm\)' -delete & display_loading $!
+##  pid=$!
+##  display_in_progress $pid "$ui_tag_ok Cleaning $folder"
+  find "$folder_path" -not -path "$folder_path" -type d -empty -delete & display_loading $!
+##  pid=$!
+##  display_in_progress $pid "$ui_tag_ok Cleaning $folder"
   echo -e "$ui_tag_ok Cleaning $folder"
 done
 echo ""
@@ -542,6 +558,12 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
     echo "plex_token=\"$plex_token_new\"" >> $my_config
     echo -e "$ui_tag_ok Plex Token: $plex_token_new"
     plex_port_new=`echo $sudo | sudo -kS cat "$plex_pref" 2>/dev/null | grep -o 'PortMappingPort[^ ]*' | cut -d'"' -f 2`
+    if [[ "$plex_port_new" == "" ]]; then
+      plex_port_default=`curl -s http://127.0.0.1:32400/web/index.html | grep "<title>Plex</title>"`
+      if [[ "$plex_port_default" != "" ]]; then
+        plex_port_new="32400"
+      fi
+    fi
     echo "plex_port=\"$plex_port_new\"" >> $my_config
     echo -e "$ui_tag_ok Plex Port: $plex_port_new"
   fi
