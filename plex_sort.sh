@@ -135,19 +135,35 @@ if [[ ! -f "$my_config" ]]; then
   touch $my_config
 fi
 my_settings_variables="display_mode crontab_entry mount_folder plex_folder download_folder exclude_folders filebot_language filebot_season_folder log_folder token_app target_1 target_2 push_for_move push_for_cleaning update_allowed"
+desc_display_mode=" ## (optional) \"full\" for full display output"
+desc_crontab_entry=" ## (optional) custom crontab"
+desc_mount_folder=" ## where are mounted your drives (usually \"/mnt\")"
+desc_plex_folder=" ## foldername containing your Plex content in each drive (usually \"Plex\")"
+desc_download_folder=" ## where your download folders are located (personally \"/mnt/sdb1/Downloads\")"
+desc_exclude_folders=" ## Plex folders to exclude (example: \"/mnt/sdb1/Plex\")"
+desc_filebot_language=" ## \"fr\" for french or \"en\" for english (example)" 
+desc_filebot_season_folder=" ## Directory name of the Season folders (\"Saison\" in french, \"Season\" in english...)"
+desc_log_folder=" ## (optional) custom log folder location"
+desc_token_app=" ## (optional) pushover setting (available on the website)"
+desc_target_1=" ## (optional) pushover ID of the primary target"
+desc_target_2=" ## (optional) pushover ID of the secondary target"
+desc_push_for_move=" ## (optional) \"yes\" to send push message on moves"
+desc_push_for_cleaning=" ## (optional) \"yes\" to send push message on cleaning"
+desc_update_allowed=" ## put anything to disable script updates"
 my_config_file=`cat $my_config`
 for script_variable in $my_settings_variables ; do
   if [[ ! "$my_config_file" =~ "$script_variable" ]]; then
-    echo $script_variable"=\"\"" >> $my_config
-    printf "\e[46m\u25B6\u25B6  \e[0m [\e[41m  \e[0m] %-56s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Config file updated, new variable added ($script_variable)"
+    description=`echo "desc_"$script_variable`
+    echo $script_variable"=\"\"${!description}" >> $my_config
+    printf "\e[46m\u25B6\u25B6  \e[0m [\e[41m  \e[0m] %-56s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Config updated, new variable ($script_variable)"
     config_updated="1"
   fi
 done
-filebot_folders=`ls "$download_folder" | grep -i "filebot"`
+filebot_folders=`ls "$download_folder" 2>/dev/null | grep -i "filebot"`
 for folder in $filebot_folders ; do
   if [[ ! "$my_config_file" =~ "$folder" ]]; then
     echo $folder"=\"\"" >> $my_config
-    printf "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[0m[\e[41m  \e[0m] %-56s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Config file updated, new folder detected ($folder)"
+    printf "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[0m[\e[41m  \e[0m] %-56s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Config updated, new folder ($folder)"
     echo "... config file updated"
     config_updated="1"
   fi
