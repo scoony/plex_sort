@@ -318,7 +318,10 @@ if curl -s -m 3 --head --request GET https://github$update_allowed.com > /dev/nu
   remote_md5=`curl -s https://raw.githubusercontent.com/scoony/plex_sort/main/plex_sort.sh | md5sum | cut -f1 -d" "`
   local_md5=`md5sum $0 | cut -f1 -d" "`
   if [[ "$remote_md5" != "$local_md5" ]]; then
-    echo -e "$ui_tag_bad Update Available"
+    if [[ "$mui_update_available" == "" ]]; then                                            ## MUI
+      mui_update_available="Update available"                                               ##
+    fi                                                                                      ##
+    echo -e "$ui_tag_bad $mui_update_available"
     echo "... ---"
     function script_upgrade {
       curl -s -m 3 --create-dir -o "/opt/scripts/plex_sort.sh" 'https://raw.githubusercontent.com/scoony/plex_sort/main/plex_sort.sh'
