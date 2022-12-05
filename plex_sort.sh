@@ -431,7 +431,11 @@ for folder in $filebot_folders ; do
   source $log_folder/MUI/$user_lang.lang
   echo -e "$ui_tag_ok $mui_download_folder"
   folder_path=`echo $download_folder"/"$folder`
-  $echo1 -e "$ui_tag_ok Path: $folder_path" 2>/dev/null
+  if [[ "$mui_download_folder_path" == "" ]]; then                                          ## MUI
+    mui_download_folder_path="Path: $folder_path"                                           ##
+  fi                                                                                        ##
+  source $log_folder/MUI/$user_lang.lang
+  $echo1 -e "$ui_tag_ok $mui_download_folder_path" 2>/dev/null
   if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo" == "1" ]]; then
     echo $sudo | sudo -kS chmod -R 777 "$folder_path" 2>/dev/null
     if [[ "$mui_download_rights" == "" ]]; then                                             ## MUI
@@ -441,9 +445,16 @@ for folder in $filebot_folders ; do
   fi
   check_conf=`cat $log_folder/plex_sort.conf | grep "$folder"`
   if [[ "$check_conf" != "" ]]; then
-    $echo1 -e "$ui_tag_ok Config setting: $check_conf" 2>/dev/null
+    if [[ "$mui_download_conf_ok" == "" ]]; then                                            ## MUI
+      mui_download_conf_ok="Config setting: $check_conf"                                    ##
+    fi                                                                                      ##
+    source $log_folder/MUI/$user_lang.lang
+    $echo1 -e "$ui_tag_ok $mui_download_conf_ok" 2>/dev/null
   else
-    echo -e "$ui_tag_bad Folder missing in config"
+    if [[ "$mui_download_missing" == "" ]]; then                                            ## MUI
+      mui_download_missing="Folder missing in config"                                       ##
+    fi                                                                                      ##
+    echo -e "$ui_tag_bad $mui_download_missing"
     echo $folder"=\"\"" >> $my_config
     if [[ "$mui_download_conf_updated" == "" ]]; then                                       ## MUI
       mui_download_conf_updated="Config updated..."                                         ##
