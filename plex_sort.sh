@@ -322,7 +322,6 @@ if curl -s -m 3 --head --request GET https://github$update_allowed.com > /dev/nu
       mui_update_available="Update available"                                               ##
     fi                                                                                      ##
     echo -e "$ui_tag_bad $mui_update_available"
-    echo "... ---"
     function script_upgrade {
       curl -s -m 3 --create-dir -o "/opt/scripts/plex_sort.sh" 'https://raw.githubusercontent.com/scoony/plex_sort/main/plex_sort.sh'
       chmod +x /opt/scripts/plex_sort.sh
@@ -333,25 +332,46 @@ if curl -s -m 3 --head --request GET https://github$update_allowed.com > /dev/nu
     }
     script_upgrade
   else
-    echo -e "$ui_tag_ok Script up to date."
+    if [[ "$mui_update_perfect" == "" ]]; then                                              ## MUI
+      mui_update_perfect="Script up to date"                                                ##
+    fi                                                                                      ##
+    echo -e "$ui_tag_ok $mui_update_perfect"
   fi
 else
   if [[ "$update_allowed" == "" ]]; then
-    echo -e "$ui_tag_bad GitHub unreachable no update."
+    if [[ "$mui_update_github_down" == "" ]]; then                                          ## MUI
+      mui_update_github_down="GitHub unreachable no update"                                 ##
+    fi                                                                                      ##
+    echo -e "$ui_tag_bad $mui_update_github_down"
   else
-    echo -e "$ui_tag_warning Update Disabled (config)"
+    if [[ "$mui_update_disabled" == "" ]]; then                                             ## MUI
+      mui_update_disabled="Update disabled (config)"                                        ##
+    fi                                                                                      ##
+    echo -e "$ui_tag_warning $mui_update_disabled"
   fi
 fi
 if curl -s -m 3 --head --request GET https://www.thetvdb.com > /dev/null; then
-  echo -e "$ui_tag_ok TheTVDB is online."
+  if [[ "$mui_update_tvdb_online" == "" ]]; then                                            ## MUI
+    mui_update_tvdb_online="TheTVDB is online"                                              ##
+  fi                                                                                        ##
+  echo -e "$ui_tag_ok $mui_update_tvdb_online"
 else
-  echo -e "$ui_tag_bad TheTVDB unreachable."
+  if [[ "$mui_update_tvdb_offline" == "" ]]; then                                           ## MUI
+    mui_update_tvdb_offline="TheTVDB is unreachable"                                        ##
+  fi                                                                                        ##
+  echo -e "$ui_tag_bad $mui_update_tvdb_offline"
   TheTVDB="1"
 fi
 if curl -s -m 3 --head --request GET https://www.themoviedb.org > /dev/null; then
-  echo -e "$ui_tag_ok TheMovieDB is online."
+  if [[ "$mui_update_moviedb_online" == "" ]]; then                                         ## MUI
+    mui_update_moviedb_online="TheMovieDB is online"                                        ##
+  fi                                                                                        ##
+  echo -e "$ui_tag_ok $mui_update_moviedb_online"
 else
-  echo -e "$ui_tag_bad TheMovieDB unreachable."
+  if [[ "$mui_update_moviedb_offline" == "" ]]; then                                        ## MUI
+    mui_update_moviedb_offline="TheMovieDB is unreachable"                                  ##
+  fi                                                                                        ##
+  echo -e "$ui_tag_bad $mui_update_moviedb_offline"
   TheMovieDB="1"
 fi
 echo ""
@@ -487,6 +507,7 @@ fi
 ## Dupe checker / cleaner
 if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo" == "1" ]]; then
   printf "$ui_tag_section" "Dupe checker/cleaner"
+  echo -e "$ui_tag_ok Generating Plex content DBs"
   for folder_db in $plex_folders ; do
     ## RETIRER LES DOSSIERS VIDES - ATTENTION SOUCIS
     ##find "$folder_db" –type d -empty
@@ -497,7 +518,6 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
 ##    pid=$!
 ##    display_in_progress $pid "$ui_tag_ok Generating Plex content DBs"
   done
-  echo -e "$ui_tag_ok Generating Plex content DBs"
 ##  echo -e "$ui_tag_ok Done"
   locate_dbs=`ls $log_folder/*.locate.db`
   locate_path=`echo $locate_dbs | sed 's/ /:/g'`
