@@ -21,5 +21,5 @@ mui_update_tvdb_offline="TheTVDB est inaccessible"
 mui_update_moviedb_online="TheMovieDB est en ligne"
 mui_update_moviedb_offline="TheMovieDB est inaccessible"
 mui_plex_folder_title="Detection des dossiers de Plex"
-mui_plex_folder_drive="Dossier Plex: $plex_path (libre: $plex_path_free_human)"
+mui_plex_folder_drive="Dossier Plex: "$plex_path" (libre: "$plex_path_free_human")"
 
