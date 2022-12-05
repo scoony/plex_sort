@@ -31,6 +31,9 @@ fi
 if [[ ! -d "$HOME/.config/plex_sort" ]]; then
   mkdir -p "$HOME/.config/plex_sort"
 fi
+if [[ ! -d "$HOME/.config/plex_sort/logs" ]]; then
+  mkdir -p "$HOME/.config/plex_sort/logs"
+fi
 my_config="$HOME/.config/plex_sort/plex_sort.conf"
 source $HOME/.config/plex_sort/plex_sort.conf
 
@@ -197,14 +200,14 @@ echo ""                                    ## space in between title and section
 
 #######################
 ## Check if root for extra features
-if [[ "$mui_root_title" == "" ]]; then          ## MUI
-  mui_root_title="Check account used"           ##
-fi                                              ##
+if [[ "$mui_root_title" == "" ]]; then                                                      ## MUI
+  mui_root_title="Check account used"                                                       ##
+fi                                                                                          ##
 $printf1 "$ui_tag_section" "$mui_root_title" 2>/dev/null
 if [[ "$EUID" == "0" ]] || [[ "$sudo" != "" ]]; then
-  if [[ "$mui_root_used" == "" ]]; then         ## MUI
-    mui_root_used="Root privileges granted"     ##
-  fi                                            ##
+  if [[ "$mui_root_used" == "" ]]; then                                                     ## MUI
+    mui_root_used="Root privileges granted"                                                 ##
+  fi                                                                                        ##
   $echo1 -e "$ui_tag_ok $mui_root_used" 2>/dev/null
   native_sudo="1"
   $echo1 "" 2>/dev/null
@@ -221,9 +224,15 @@ else
       sudo=$user_pass
     else
       touch $log_folder/.no-root
-      echo -e "$ui_tag_bad Some optional features are disabled (not root)"
+      if [[ "$mui_root_disabled" == "" ]]; then                                             ## MUI
+        mui_root_disabled="Some optional features are disabled (not root)"                  ##
+      fi                                                                                    ##
+      echo -e "$ui_tag_bad Smui_root_disabled"
     fi
-    echo -e "$ui_tag_bad Some optional features are disabled (not root)"
+    if [[ "$mui_root_disabled" == "" ]]; then                                               ## MUI
+      mui_root_disabled="Some optional features are disabled (not root)"                    ##
+    fi                                                                                      ##
+    echo -e "$ui_tag_bad $mui_root_disabled"
   fi
   echo ""
 fi
@@ -231,20 +240,35 @@ fi
 
 #######################
 ## Install / Check dependencies
-$printf1 "$ui_tag_section" "Install / Check dependencies" 2>/dev/null
+if [[ "$mui_dependencies_title" == "" ]]; then                                              ## MUI
+  mui_dependencies_title="Install / Check dependencies"                                     ##
+fi                                                                                          ##
+$printf1 "$ui_tag_section" "$mui_dependencies_title" 2>/dev/null
 my_dependencies="filebot curl awk trash-put"
 for dependency in $my_dependencies ; do
   if $dependency -help > /dev/null 2>/dev/null ; then
-    $echo1 -e "$ui_tag_ok Dependency: $dependency" 2>/dev/null
+    if [[ "$mui_dependencies_dep" == "" ]]; then                                            ## MUI
+      mui_dependencies_dep="Dependency:"                                                    ##
+    fi                                                                                      ##
+    $echo1 -e "$ui_tag_ok $mui_dependencies_dep $dependency" 2>/dev/null
   else
-    echo -e "$ui_tag_bad Dependency missing: $dependency"
-    echo -e "$tag_ui_warning Installing dependency..."
+    if [[ "$mui_dependencies_dep_missing" == "" ]]; then                                    ## MUI
+      mui_dependencies_dep_missing="Dependency missing:"                                    ##
+    fi                                                                                      ##
+    echo -e "$ui_tag_bad $mui_dependencies_dep_missing $dependency"
+    if [[ "$mui_dependencies_install" == "" ]]; then                                        ## MUI
+      mui_dependencies_dep_install="Installing dependency..."                               ##
+    fi                                                                                      ##
+    echo -e "$tag_ui_warning $mui_dependencies_dep_install"
     echo $sudo | sudo -kS apt install $dependency -y 2>/dev/null
     if $dependency -help > /dev/null 2>/dev/null ; then
-      echo -e "$ui_tag_ok Dependency: $dependency"
+      echo -e "$ui_tag_ok $mui_dependencies_dep $dependency"
     else
-      echo -e "$ui_tag_bad Dependency missing: $dependency"
-      echo -e "... manual install required..."
+      echo -e "$ui_tag_bad $mui_dependencies_dep_missing $dependency"
+      if [[ "$mui_dependencies_manual" == "" ]]; then                                       ## MUI
+        mui_dependencies_dep_manual="... manual install required..."                        ##
+      fi                                                                                    ##
+      echo -e "$mui_dependencies_dep_manual"
       exit 1
     fi
   fi
@@ -254,7 +278,10 @@ $echo1 "" 2>/dev/null
 
 #######################
 ## Check FileBot Licence
-$printf1 "$ui_tag_section" "Check FileBot licence" 2>/dev/null
+if [[ "$mui_filebot_title" == "" ]]; then                                                   ## MUI
+  mui_filebot_title="Check FileBot licence"                                                 ##
+fi                                                                                          ##
+$printf1 "$ui_tag_section" "$mui_filebot_title" 2>/dev/null
 if [[ ! -f $log_folder/.licence ]]; then
   echo ""
   check_local_licence=`filebot -script fn:sysinfo script | grep "Valid-Until"`
@@ -273,13 +300,19 @@ if [[ ! -f $log_folder/.licence ]]; then
   fi
 else
   filebot_date=`cat $log_folder/.licence | awk 'END {print $NF}'`
-  $echo1 -e "$ui_tag_ok Filebot is activated ($filebot_date" 2>/dev/null
+  if [[ "$mui_filebot_ok" == "" ]]; then                                                    ## MUI
+  mui_filebot_ok="Filebot is activated ("                                                   ##
+fi                                                                                          ##
+  $echo1 -e "$ui_tag_ok $mui_filebot_ok$filebot_date" 2>/dev/null
   $echo1 "" 2>/dev/null
 fi
 
 
 #######################
 ## Update and check web
+if [[ "$mui_update_title" == "" ]]; then                                                    ## MUI
+  mui_update_title="Internet availability and Update"                                       ##
+fi                                                                                          ##
 printf "$ui_tag_section" "Internet availability and Update"
 if curl -s -m 3 --head --request GET https://github$update_allowed.com > /dev/null; then 
   remote_md5=`curl -s https://raw.githubusercontent.com/scoony/plex_sort/main/plex_sort.sh | md5sum | cut -f1 -d" "`
@@ -562,6 +595,19 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
       plex_port_default=`curl -s http://127.0.0.1:32400/web/index.html | grep "<title>Plex</title>"`
       if [[ "$plex_port_default" != "" ]]; then
         plex_port_new="32400"
+      else
+        tput civis
+        for i in {1000..65535} ; do
+        check_plex_on_port=`curl -s -m 2 "http://127.0.0.1:$i/web/index.html" | grep "<title>Plex</title>"`
+        printf "\r$ui_tag_warning Scanning ports to find Plex: $i"
+        if [[ "$check_plex_on_port" != "" ]]; then
+          printf "$mon_printf" && printf "\r"
+          echo -e "$ui_tag_ok Plex port found: $i"
+          plex_port_new=$i
+          tput cnorm
+          break
+        fi
+        done
       fi
     fi
     echo "plex_port=\"$plex_port_new\"" >> $my_config
