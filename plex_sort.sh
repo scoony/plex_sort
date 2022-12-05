@@ -135,6 +135,7 @@ else
   $printf1 "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[0m[\e[42m  \e[0m] %-56s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Language file up to date ($user_lang)" 2>/dev/null
 fi
 source $log_folder/MUI/$user_lang.lang
+#source ./MUI/$user_lang.lang
 
 
 #######################
@@ -301,8 +302,8 @@ if [[ ! -f $log_folder/.licence ]]; then
 else
   filebot_date=`cat $log_folder/.licence | awk 'END {print $NF}'`
   if [[ "$mui_filebot_ok" == "" ]]; then                                                    ## MUI
-  mui_filebot_ok="Filebot is activated ("                                                   ##
-fi                                                                                          ##
+    mui_filebot_ok="Filebot is activated ("                                                 ##
+  fi                                                                                        ##
   $echo1 -e "$ui_tag_ok $mui_filebot_ok$filebot_date" 2>/dev/null
   $echo1 "" 2>/dev/null
 fi
@@ -379,8 +380,8 @@ echo ""
 
 #######################
 ## Detect Plex folders and select best target
-if [[ "$mui_plex_folder_title" == "" ]]; then                                                      ## MUI
-  mui_plex_folder_title="Detect Plex folders"                                                       ##
+if [[ "$mui_plex_folder_title" == "" ]]; then                                               ## MUI
+  mui_plex_folder_title="Detect Plex folders"                                               ##
 fi                                                                                          ##
 printf "$ui_tag_section" "$mui_plex_folder_title"
 plex_folders=`ls -d $mount_folder/*/$plex_folder/`
@@ -388,13 +389,17 @@ for plex_path in $plex_folders ; do
   if [[ ! "$exclude_folders" =~ "$plex_path" ]]; then
     plex_path_free=`df -k --output=avail "$plex_path" | tail -n1`
     plex_path_free_human=`df -kh --output=avail "$plex_path" | tail -n1`
-    if [[ "$mui_plex_folder_drive" == "" ]]; then                                                      ## MUI
-      mui_plex_folder_drive="Plex folder: $plex_path (free: $plex_path_free_human)"                                                       ##
-    fi                                                                                          ##
+    if [[ "$mui_plex_folder_drive" == "" ]]; then                                           ## MUI
+      mui_plex_folder_drive="Plex folder: $plex_path (free: $plex_path_free_human)"         ##
+    fi                                                                                      ##
+    source $log_folder/MUI/$user_lang.lang
     $echo1 -e "$ui_tag_ok $mui_plex_folder_drive" 2>/dev/null
     if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo" == "1" ]]; then
       echo $sudo | sudo -kS chmod -R 777 "$plex_path" 2>/dev/null
-      $echo1 -e "$ui_tag_chmod new rights (read/write/execute) applied" 2>/dev/null
+      if [[ "$mui_plex_folder_chmod" == "" ]]; then                                         ## MUI
+        mui_plex_folder_chmod="Permissions (read/write/execute) applied"                    ##
+      fi                                                                                    ##
+      $echo1 -e "$ui_tag_chmod $mui_plex_folder_chmod" 2>/dev/null
       $echo1 "" 2>/dev/null
     fi
     echo "$plex_path_free $plex_path" >> $log_folder/temp.log
@@ -404,21 +409,35 @@ best_plex_target=`sort -n $log_folder/temp.log | awk 'END {print $NF}'`
 rm $log_folder/temp.log
 best_free=`df -kh --output=avail "$best_plex_target" | tail -n1`
 $echo1 "" 2>/dev/null
-echo -e "$ui_tag_ok Best target: $best_plex_target ($best_free )"
+if [[ "$mui_plex_folder_best" == "" ]]; then                                                ## MUI
+  mui_plex_folder_best="Best target: $best_plex_target ($best_free )"                       ##
+fi                                                                                          ##
+  source $log_folder/MUI/$user_lang.lang
+echo -e "$ui_tag_ok $mui_plex_folder_best"
 echo ""
 
 
 #######################
 ## Detect download folders and space required
-printf "$ui_tag_section" "Detect download folders"
+if [[ "$mui_download_title" == "" ]]; then                                                  ## MUI
+  mui_download_title="Detect download folders"                                              ##
+fi                                                                                          ##
+printf "$ui_tag_section" "$mui_download_title"
 filebot_folders=`ls "$download_folder" | grep -i "filebot"`
 for folder in $filebot_folders ; do
-  echo -e "$ui_tag_ok Folder: $folder"
+  if [[ "$mui_download_folder" == "" ]]; then                                               ## MUI
+    mui_download_folder="Folder: $folder"                                                   ##
+  fi                                                                                        ##
+  source $log_folder/MUI/$user_lang.lang
+  echo -e "$ui_tag_ok $mui_download_folder"
   folder_path=`echo $download_folder"/"$folder`
   $echo1 -e "$ui_tag_ok Path: $folder_path" 2>/dev/null
   if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo" == "1" ]]; then
     echo $sudo | sudo -kS chmod -R 777 "$folder_path" 2>/dev/null
-    $echo1 -e "$ui_tag_chmod new rights (read/write/execute) applied" 2>/dev/null
+    if [[ "$mui_download_rights" == "" ]]; then                                             ## MUI
+      mui_download_rights="Permissions (read/write/execute) applied"                        ##
+    fi                                                                                      ##
+    $echo1 -e "$ui_tag_chmod $mui_download_rights" 2>/dev/null
   fi
   check_conf=`cat $log_folder/plex_sort.conf | grep "$folder"`
   if [[ "$check_conf" != "" ]]; then
@@ -426,7 +445,10 @@ for folder in $filebot_folders ; do
   else
     echo -e "$ui_tag_bad Folder missing in config"
     echo $folder"=\"\"" >> $my_config
-    echo -e "$ui_tag_ok Config updated..."
+    if [[ "$mui_download_conf_updated" == "" ]]; then                                       ## MUI
+      mui_download_conf_updated="Config updated..."                                         ##
+    fi                                                                                      ##
+    echo -e "$ui_tag_ok $mui_download_conf_updated"
   fi
   folder_usage=`du -s "$folder_path" 2>/dev/null | awk '{ print $1 }'`
   echo $folder_usage >> $log_folder/temp.log
@@ -436,7 +458,11 @@ space_required=`cat $log_folder/temp.log | paste -sd+ - | bc`
 space_required_human=`cat $log_folder/temp.log | paste -sd+ - | bc | numfmt --to=iec --from-unit=K`
 rm $log_folder/temp.log
 ##echo ""
-echo -e "$ui_tag_ok Space required to store content: $space_required_human"
+if [[ "$mui_download_df_required" == "" ]]; then                                            ## MUI
+  mui_download_df_required="Space required to store content: $space_required_human"         ##
+fi                                                                                          ##
+source $log_folder/MUI/$user_lang.lang
+echo -e "$ui_tag_ok $mui_download_df_required"
 echo ""
 
 

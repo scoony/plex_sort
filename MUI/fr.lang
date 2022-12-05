@@ -1,3 +1,4 @@
+#!/bin/bash
 ## Language file
 
 mui_root_title="Verification des droits"
@@ -21,5 +22,12 @@ mui_update_tvdb_offline="TheTVDB est inaccessible"
 mui_update_moviedb_online="TheMovieDB est en ligne"
 mui_update_moviedb_offline="TheMovieDB est inaccessible"
 mui_plex_folder_title="Detection des dossiers de Plex"
-mui_plex_folder_drive="Dossier Plex: "$plex_path" (libre: "$plex_path_free_human")"
+mui_plex_folder_drive="Dossier Plex: $plex_path (libre: $plex_path_free_human)"
+mui_plex_folder_chmod="Permissions (lecture/écriture/exécution) appliquées"
+mui_plex_folder_best="Meilleure cible: $best_plex_target ($best_free )"
+mui_download_title="Detection des dossiers de telechargement"
+mui_download_folder="Dossier: $folder"
+mui_download_rights="Permissions (lecture/écriture/exécution) appliquées"
+mui_download_conf_updated="Configuration mise à jour..."
+mui_download_df_required="Espace disque requis pour le traitement: $space_required_human"
 
