@@ -379,13 +379,19 @@ echo ""
 
 #######################
 ## Detect Plex folders and select best target
-printf "$ui_tag_section" "Detect Plex folders"
+if [[ "$mui_plex_folder_title" == "" ]]; then                                                      ## MUI
+  mui_plex_folder_title="Detect Plex folders"                                                       ##
+fi                                                                                          ##
+printf "$ui_tag_section" "$mui_plex_folder_title"
 plex_folders=`ls -d $mount_folder/*/$plex_folder/`
 for plex_path in $plex_folders ; do
   if [[ ! "$exclude_folders" =~ "$plex_path" ]]; then
     plex_path_free=`df -k --output=avail "$plex_path" | tail -n1`
     plex_path_free_human=`df -kh --output=avail "$plex_path" | tail -n1`
-    $echo1 -e "$ui_tag_ok Plex folder: $plex_path (free: $plex_path_free_human)" 2>/dev/null
+    if [[ "$mui_plex_folder_drive" == "" ]]; then                                                      ## MUI
+      mui_plex_folder_drive="Plex folder: $plex_path (free: $plex_path_free_human)"                                                       ##
+    fi                                                                                          ##
+    $echo1 -e "$ui_tag_ok $mui_plex_folder_drive" 2>/dev/null
     if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo" == "1" ]]; then
       echo $sudo | sudo -kS chmod -R 777 "$plex_path" 2>/dev/null
       $echo1 -e "$ui_tag_chmod new rights (read/write/execute) applied" 2>/dev/null
