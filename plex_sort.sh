@@ -313,7 +313,7 @@ fi
 if [[ "$mui_update_title" == "" ]]; then                                                    ## MUI
   mui_update_title="Internet availability and Update"                                       ##
 fi                                                                                          ##
-printf "$ui_tag_section" "Internet availability and Update"
+printf "$ui_tag_section" "$mui_update_title"
 if curl -s -m 3 --head --request GET https://github$update_allowed.com > /dev/null; then 
   remote_md5=`curl -s https://raw.githubusercontent.com/scoony/plex_sort/main/plex_sort.sh | md5sum | cut -f1 -d" "`
   local_md5=`md5sum $0 | cut -f1 -d" "`
