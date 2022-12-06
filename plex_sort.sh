@@ -479,16 +479,31 @@ echo ""
 
 #######################
 ## Here we go
-printf "$ui_tag_section" "Sorting process"
+if [[ "$mui_sorting_title" == "" ]]; then                                                   ## MUI
+  mui_sorting_title="Sorting process"                                                       ##
+fi                                                                                          ##
+printf "$ui_tag_section" "$mui_sorting_title"
 for folder in $filebot_folders ; do
   source_folder_path=`echo $download_folder"/"$folder`
   target_conf=${!folder}
-  echo -e "$ui_tag_ok Source: $folder - Target: $target_conf"
+  if [[ "$mui_sorting_resume" == "" ]]; then                                                ## MUI
+    mui_sorting_resume="Source: $folder - Target: $target_conf"                             ##
+  fi                                                                                        ##
+  source $log_folder/MUI/$user_lang.lang
+  echo -e "$ui_tag_ok $mui_sorting_resume"
   if [[ "$target_conf" == "" ]]; then
-    echo -e "No config provided"
+    if [[ "$mui_sorting_no_config" == "" ]]; then                                           ## MUI
+      mui_sorting_no_config="No config provided"                                            ##
+    fi                                                                                      ##
+    echo -e "$ui_tag_bad $mui_sorting_no_config"
+    ## A VERIFIER PROBABLE ERREUR GRAVE (AURAIT DU ETRE REGLER SECTION PRECEDENTE)
   else
     target_folder_path=`echo $best_plex_target""$target_conf`
-    $echo1 -e "$ui_tag_ok Content destination: $target_folder_path" 2>/dev/null
+    if [[ "$mui_sorting_target" == "" ]]; then                                              ## MUI
+      mui_sorting_target="Content destination: $target_folder_path"                         ##
+    fi                                                                                      ##
+    source $log_folder/MUI/$user_lang.lang
+    $echo1 -e "$ui_tag_ok $mui_sorting_target" 2>/dev/null
     if [[ "${folder,,}" =~ "film" ]] || [[ "${folder,,}" =~ "movie" ]]; then
       agent="TheMovieDB"
       format="movieFormat"
@@ -498,10 +513,15 @@ for folder in $filebot_folders ; do
       format="seriesFormat"
       output="{n}/{'$filebot_season_folder '+s.pad(2)}/{n} - {sxe} - {t}"
     fi
-    $echo1 -e "$ui_tag_ok Agent used: $agent" 2>/dev/null
+    if [[ "$mui_sorting_agent" == "" ]]; then                                               ## MUI
+      mui_sorting_agent="Agent used: $agent"                                                ##
+    fi                                                                                      ##
+    source $log_folder/MUI/$user_lang.lang
+    $echo1 -e "$ui_tag_ok $mui_sorting_agent" 2>/dev/null
     allow_agent=${!agent}
     if [[ "$allow_agent" != "1" ]]; then
       folder_files=`find "$source_folder_path" -type f -iname '*[avi|mp4|mkv]' > $log_folder/$folder.medias.log`
+      ## PEUT ETRE CHERCHER AUTRES EXTENSIONS
       check_medias=`cat $log_folder/$folder.medias.log`
       if [[ "$check_medias" != "" ]]; then
         filebot -script fn:amc -non-strict --conflict override --lang $filebot_language --encoding UTF-8 --action move "$source_folder_path" --def "$format=$output" --output "$target_folder_path" 2>/dev/null > $log_folder/filebot_output.txt & display_loading $!
@@ -519,9 +539,20 @@ for folder in $filebot_folders ; do
 ##            echo "DEBUG: $move_done"
             move_source=`echo "$move_done" |  grep -oP '(?<=from \[).*(?=\] to)'`
             move_target=`echo "$move_done" |  grep -oP '(?<=to \[).*(?=\]$)'`
-            echo -e "$ui_tag_ok File processed:"
-            echo -e "$ui_tag_processed Source: $move_source"
-            echo -e "$ui_tag_processed Target: $move_target"
+            if [[ "$mui_sorting_file_found" == "" ]]; then                                  ## MUI
+              mui_sorting_file_found="File processed:"                                      ##
+            fi                                                                              ##
+            echo -e "$ui_tag_ok $mui_sorting_file_found"
+            if [[ "$mui_sorting_source" == "" ]]; then                                      ## MUI
+              mui_sorting_source="Source: $move_source"                                     ##
+            fi                                                                              ##
+            source $log_folder/MUI/$user_lang.lang
+            echo -e "$ui_tag_processed $mui_sorting_source"
+            if [[ "$mui_sorting_target" == "" ]]; then                                      ## MUI
+              mui_sorting_target="Target: $move_target"                                     ##
+            fi                                                                              ##
+            source $log_folder/MUI/$user_lang.lang
+            echo -e "$ui_tag_processed $mui_sorting_target"
             new_media="1"
             if [[ "$push_for_move" == "yes" ]]; then
               file_source=`basename "$move_source"`
@@ -534,7 +565,11 @@ for folder in $filebot_folders ; do
         fi
       fi
     else
-      echo -e "$ui_tag_bad $agent is offline, skipping"
+      if [[ "$mui_sorting_offline" == "" ]]; then                                           ## MUI
+        mui_sorting_offline="$agent is offline, skipping"                                   ##
+      fi                                                                                    ##
+      source $log_folder/MUI/$user_lang.lang
+      echo -e "$ui_tag_bad $mui_sorting_offline"
     fi
   fi
   if [[ $echo1 != "" ]]; then
