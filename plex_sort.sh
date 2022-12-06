@@ -635,7 +635,7 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
     mui_dupe_extracting_done="Extraction completed (in "$duration"s)"                       ##
   fi                                                                                        ##
   source $log_folder/MUI/$user_lang.lang
-  echo -e "$ui_tag_ok $mui_extracting_done"
+  echo -e "$ui_tag_ok $mui_dupe_extracting_done"
   cat $log_folder/files_done.txt | uniq -cd > $log_folder/dupes.txt                                                                       ## search for dupes
   rm $log_folder/files_done.txt
   my_dupes=()
