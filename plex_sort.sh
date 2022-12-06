@@ -499,8 +499,8 @@ for folder in $filebot_folders ; do
     ## A VERIFIER PROBABLE ERREUR GRAVE (AURAIT DU ETRE REGLER SECTION PRECEDENTE)
   else
     target_folder_path=`echo $best_plex_target""$target_conf`
-    if [[ "$mui_sorting_target_path" == "" ]]; then                                              ## MUI
-      mui_sorting_target_path="Content destination: $target_folder_path"                         ##
+    if [[ "$mui_sorting_target_path" == "" ]]; then                                         ## MUI
+      mui_sorting_target_path="Content destination: $target_folder_path"                    ##
     fi                                                                                      ##
     source $log_folder/MUI/$user_lang.lang
     $echo1 -e "$ui_tag_ok $mui_sorting_target_path" 2>/dev/null
@@ -584,14 +584,24 @@ fi
 #######################
 ## Dupe checker / cleaner
 if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo" == "1" ]]; then
-  printf "$ui_tag_section" "Dupe checker/cleaner"
-  echo -e "$ui_tag_ok Generating Plex content DBs"
+  if [[ "$mui_dupe_title" == "" ]]; then                                                    ## MUI
+    mui_dupe_title="Dupe checker/cleaner"                                                   ##
+  fi                                                                                        ##
+  printf "$ui_tag_section" "$mui_dupe_title"
+  if [[ "$mui_dupe_generating" == "" ]]; then                                               ## MUI
+    mui_dupe_generating="Generating Plex content DBs"                                       ##
+  fi                                                                                        ##
+  echo -e "$ui_tag_ok $mui_dupe_generating"
   for folder_db in $plex_folders ; do
     ## RETIRER LES DOSSIERS VIDES - ATTENTION SOUCIS
     ##find "$folder_db" –type d -empty
     disk_db=`echo $folder_db | sed 's/\/Plex\///'`
     disk_db_id="$(basename $disk_db)"
-    $echo1 -e "$ui_tag_ok Folder: $folder_db (DB: $disk_db_id.locate.db)" 2>/dev/null
+    if [[ "$mui_dupe_db" == "" ]]; then                                                     ## MUI
+    mui_dupe_db="Folder: $folder_db (DB: $disk_db_id.locate.db)"                            ##
+  fi                                                                                        ##
+    source $log_folder/MUI/$user_lang.lang
+    $echo1 -e "$ui_tag_ok $mui_dupe_db" 2>/dev/null
     echo $sudo | sudo -kS updatedb -U "$folder_db" -o "$log_folder/$disk_db_id.locate.db" 2>/dev/null & display_loading $!
 ##    pid=$!
 ##    display_in_progress $pid "$ui_tag_ok Generating Plex content DBs"
@@ -607,7 +617,10 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
   done <$log_folder/full_plex_clean.txt
   touch $log_folder/files_only.txt
   time1=`date +%s`
-  echo -e "$ui_tag_ok Extracting filenames... "
+  if [[ "$mui_dupe_extracting" == "" ]]; then                                               ## MUI
+    mui_dupe_extracting="Extracting filenames..."                                           ##
+  fi                                                                                        ##
+  echo -e "$ui_tag_ok $mui_dupe_extracting"
   for i in "${my_files[@]}"; do
     basename "$i" >> $log_folder/files_only.txt ## remove paths
     ## remove extension too slow: | rev | cut -f 2- -d '.' | rev
@@ -618,7 +631,11 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
   rm $log_folder/files_only.txt
   time2=`date +%s`
   duration=$(($time2-$time1))
-  echo -e "$ui_tag_ok Extraction completed (in "$duration"s)"
+  if [[ "$mui_dupe_extracting_done" == "" ]]; then                                          ## MUI
+    mui_dupe_extracting_done="Extraction completed (in "$duration"s)"                       ##
+  fi                                                                                        ##
+  source $log_folder/MUI/$user_lang.lang
+  echo -e "$ui_tag_ok $mui_extracting_done"
   cat $log_folder/files_done.txt | uniq -cd > $log_folder/dupes.txt                                                                       ## search for dupes
   rm $log_folder/files_done.txt
   my_dupes=()
@@ -627,8 +644,11 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
   done <$log_folder/dupes.txt
   rm $log_folder/dupes.txt
   if [[ "${my_dupes[@]}" != "" ]]; then
-    echo -e "$ui_tag_warning Dupes Found... processing"
-    echo "......"
+    if [[ "$mui_dupe_file_found" == "" ]]; then                                             ## MUI
+      mui_dupe_file_found="Dupes Found... processing"                                       ##
+    fi                                                                                      ##
+    echo -e "$ui_tag_warning $mui_dupe_file_found"
+    echo -e "$ui_tag_warning ......"
     for j in "${my_dupes[@]}"; do
       my_dupe_file=`echo $j | awk '{for (i=2; i<=NF; i++) printf $i FS}'`
       echo $sudo | sudo -kS locate -i -d $locate_path: $my_dupe_file 2>/dev/null > $log_folder/current_dupe.txt                           ## locate dupes
@@ -640,12 +660,20 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
       for k in "${this_dupe[@]}"; do                                                                                                      ## collect infos on each dupe
         date_file=`date -r "$k" "+%Y-%m-%d"`
         echo "$date_file ¤$k¤" >> $log_folder/current_process.txt
-        echo -e "$ui_tag_warning Dupe Found: $k Date: $date_file"
+        if [[ "$mui_dupe_file" == "" ]]; then                                               ## MUI
+          mui_dupe_file="Dupe Found: $k Date: $date_file"                                   ##
+        fi                                                                                  ##
+        source $log_folder/MUI/$user_lang.lang
+        echo -e "$ui_tag_warning $mui_dupe_file"
       done
       file_remove=`sort $log_folder/current_process.txt | head -n1 | grep -oP '(?<=¤).*(?=¤)'`
       if [[ "$file_remove" != "" ]]; then
         trash-put "$file_remove"
-        echo -e "$ui_tag_ok File sent to trash: $file_remove"
+        if [[ "$mui_dupe_trash" == "" ]]; then                                              ## MUI
+          mui_dupe_trash="File sent to trash: $file_remove"                                 ##
+        fi                                                                                  ##
+        source $log_folder/MUI/$user_lang.lang
+        echo -e "$ui_tag_ok $mui_dupe_trash"
         if [[ "$push_for_cleaning" == "yes" ]]; then
           trash_file_date=`date -r "$file_remove" "+%d/%m/%Y"`
           trash_file_format=`mediainfo --Inform="Video;%Format%" "$file_remove"`
@@ -656,10 +684,13 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
         fi
       fi
       rm $log_folder/current_process.txt
-      echo "......"
+      echo -e "$ui_tag_warning......"
     done
   else
-    echo -e "$ui_tag_ok No dupes found"
+    if [[ "$mui_dupe_nothing" == "" ]]; then                                                ## MUI
+      mui_dupe_nothing="No dupes found"                                                     ##
+    fi                                                                                      ##
+    echo -e "$ui_tag_ok $mui_dupe_nothing"
   fi
   echo ""
 fi
@@ -667,7 +698,10 @@ fi
 
 #######################
 ## Clean Download folders
-printf "$ui_tag_section" "Clean download folders"
+if [[ "$mui_cleaning_title" == "" ]]; then                                                  ## MUI
+  mui_cleaning_title="Clean download folders"                                               ##
+fi                                                                                          ##
+printf "$ui_tag_section" "$mui_cleaning_title"
 filebot_folders=`ls "$download_folder" | grep -i "filebot"`
 for folder in $filebot_folders ; do
   folder_path=`echo $download_folder"/"$folder`
@@ -677,7 +711,11 @@ for folder in $filebot_folders ; do
   find "$folder_path" -not -path "$folder_path" -type d -empty -delete & display_loading $!
 ##  pid=$!
 ##  display_in_progress $pid "$ui_tag_ok Cleaning $folder"
-  echo -e "$ui_tag_ok Cleaning $folder"
+  if [[ "$mui_cleaning_folder" == "" ]]; then                                               ## MUI
+    mui_cleaning_folder="Cleaning $folder"                                                  ##
+  fi                                                                                        ##
+  source $log_folder/MUI/$user_lang.lang
+  echo -e "$ui_tag_ok $mui_cleaning_folder"
 done
 echo ""
 
@@ -685,12 +723,19 @@ echo ""
 #######################
 ## Plex Update library
 if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo" == "1" ]]; then
-  printf "$ui_tag_section" "Update Plex library"
+  if [[ "$mui_plex_title" == "" ]]; then                                                    ## MUI
+    mui_plex_title="Update Plex library"                                                    ##
+  fi                                                                                        ##
+  printf "$ui_tag_section" "$mui_plex_title"
   if [[ "$plex_token" == "" ]] || [[ "$plex_port" == "" ]]; then
     plex_pref=`locate Preferences.xml | grep plexmediaserver | head -n1`
     plex_token_new=`echo $sudo | sudo -kS cat "$plex_pref" 2>/dev/null | grep -o 'Token[^ ]*' | cut -d'"' -f 2`
     echo "plex_token=\"$plex_token_new\"" >> $my_config
-    echo -e "$ui_tag_ok Plex Token: $plex_token_new"
+    if [[ "$mui_plex_token" == "" ]]; then                                                  ## MUI
+      mui_plex_token="Plex Token: $plex_token_new"                                          ##
+    fi                                                                                      ##
+    source $log_folder/MUI/$user_lang.lang
+    echo -e "$ui_tag_ok $mui_plex_token"
     plex_port_new=`echo $sudo | sudo -kS cat "$plex_pref" 2>/dev/null | grep -o 'PortMappingPort[^ ]*' | cut -d'"' -f 2`
     if [[ "$plex_port_new" == "" ]]; then
       plex_port_default=`curl -s http://127.0.0.1:32400/web/index.html | grep "<title>Plex</title>"`
@@ -700,10 +745,18 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
         tput civis
         for i in {1000..65535} ; do
         check_plex_on_port=`curl -s -m 2 "http://127.0.0.1:$i/web/index.html" | grep "<title>Plex</title>"`
-        printf "\r$ui_tag_warning Scanning ports to find Plex: $i"
+        if [[ "$mui_plex_scanning" == "" ]]; then                                           ## MUI
+          mui_plex_scanning="Scanning ports to find Plex: $i"                               ##
+        fi                                                                                  ##
+        source $log_folder/MUI/$user_lang.lang
+        printf "\r$ui_tag_warning $mui_plex_scanning"
         if [[ "$check_plex_on_port" != "" ]]; then
           printf "$mon_printf" && printf "\r"
-          echo -e "$ui_tag_ok Plex port found: $i"
+          if [[ "$mui_plex_port_found" == "" ]]; then                                       ## MUI
+            mui_plex_port_found="Plex port found: $i"                                       ##
+          fi                                                                                ##
+          source $log_folder/MUI/$user_lang.lang
+          echo -e "$ui_tag_ok $mui_plex_port_found"
           plex_port_new=$i
           tput cnorm
           break
@@ -712,14 +765,24 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
       fi
     fi
     echo "plex_port=\"$plex_port_new\"" >> $my_config
-    echo -e "$ui_tag_ok Plex Port: $plex_port_new"
+    if [[ "$mui_plex_port" == "" ]]; then                                                   ## MUI
+      mui_plex_port="Plex Port: $plex_port_new"                                             ##
+    fi                                                                                      ##
+    source $log_folder/MUI/$user_lang.lang
+    echo -e "$ui_tag_ok $mui_plex_port"
   fi
   if [[ "$new_media" == "1" ]]; then
-    echo -e "$ui_tag_warning Update Plex library"
+    if [[ "$mui_plex_update" == "" ]]; then                                                 ## MUI
+      mui_plex_update="Update Plex library"                                                 ##
+    fi                                                                                      ##
+    echo -e "$ui_tag_warning $mui_plex_update"
     url_refresh=`echo "http://127.0.0.1:"$plex_port"/library/sections/all/refresh?X-Plex-Token="$plex_token`
     curl -s "$url_refresh"
     rm refresh* 2>/dev/null
   else
-    echo -e "$ui_tag_ok No need to update"
+    if [[ "$mui_plex_no_update" == "" ]]; then                                              ## MUI
+      mui_plex_no_update="No need to update"                                                ##
+    fi                                                                                      ##
+    echo -e "$ui_tag_ok $mui_plex_no_update"
   fi
 fi
