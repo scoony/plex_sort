@@ -39,14 +39,6 @@ source $HOME/.config/plex_sort/plex_sort.conf
 
 
 #######################
-## Display Mode
-if [[ "$display_mode" == "full" ]] || [[ "$@" =~ "--mode-full" ]]; then
-  echo1="echo"
-  printf1="printf"
-fi
-
-
-#######################
 ## MUI Feature
 if [[ ! -d $log_folder/MUI ]]; then
   mkdir -p "$log_folder/MUI"
@@ -62,6 +54,14 @@ else
 fi
 source $log_folder/MUI/$user_lang.lang
 #source ./MUI/$user_lang.lang
+
+
+#######################
+## Display Mode
+if [[ "$display_mode" == "full" ]] || [[ "$@" =~ "--mode-full" ]]; then
+  echo1="echo"
+  printf1="printf"
+fi
 
 
 #######################
@@ -134,7 +134,7 @@ function display_loading() {
   mon_printf="\r                                                                             "
   while kill -0 "$pid" 2>/dev/null; do
     i=$(((i + $charwidth) % ${#spin}))
-    printf "\r[\e[43m \u039E \e[0m] %"$lengh_spinner"s %s" "$mui_loading_spinner" "${spin:$i:$charwidth}"
+    printf "\r[\e[43m \u2713 \e[0m] %"$lengh_spinner"s %s" "$mui_loading_spinner" "${spin:$i:$charwidth}"
     sleep .1
   done
   tput cnorm
