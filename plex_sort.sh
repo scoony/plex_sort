@@ -7,7 +7,6 @@ if [[ "$@" =~ "--force-update" ]]; then
   echo "Script will be overwrited in /opt/script"
   curl -s -m 3 --create-dir -o "/opt/scripts/plex_sort.sh" "https://raw.githubusercontent.com/scoony/plex_sort/main/plex_sort.sh"
   echo "Process completed... exit"
-  date
   exit 1
 fi
 
@@ -20,6 +19,7 @@ printf "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[1m %-62s  \e[0m \e[46m  \e[0m \e[46m
 check_dupe=$(ps -ef | grep "$0" | grep -v grep | wc -l | xargs)
 if [[ "$check_dupe" > "2" ]]; then
   echo "Script already running"
+  date
   exit 1
 fi
 
