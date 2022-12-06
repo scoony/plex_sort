@@ -499,11 +499,11 @@ for folder in $filebot_folders ; do
     ## A VERIFIER PROBABLE ERREUR GRAVE (AURAIT DU ETRE REGLER SECTION PRECEDENTE)
   else
     target_folder_path=`echo $best_plex_target""$target_conf`
-    if [[ "$mui_sorting_target" == "" ]]; then                                              ## MUI
-      mui_sorting_target="Content destination: $target_folder_path"                         ##
+    if [[ "$mui_sorting_target_path" == "" ]]; then                                              ## MUI
+      mui_sorting_target_path="Content destination: $target_folder_path"                         ##
     fi                                                                                      ##
     source $log_folder/MUI/$user_lang.lang
-    $echo1 -e "$ui_tag_ok $mui_sorting_target" 2>/dev/null
+    $echo1 -e "$ui_tag_ok $mui_sorting_target_path" 2>/dev/null
     if [[ "${folder,,}" =~ "film" ]] || [[ "${folder,,}" =~ "movie" ]]; then
       agent="TheMovieDB"
       format="movieFormat"
