@@ -1,6 +1,7 @@
 #!/bin/bash
 ## Language file
 
+mui_loading_spinner="Chargement..."
 mui_root_title="Verification des droits"
 mui_root_used="Privilèges root accordés"
 mui_root_question="Saisissez votre mot de passe (optionnel, appuyez sur entrée pour passer): "

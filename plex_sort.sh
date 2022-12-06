@@ -39,6 +39,24 @@ source $HOME/.config/plex_sort/plex_sort.conf
 
 
 #######################
+## MUI Feature
+if [[ ! -d $log_folder/MUI ]]; then
+  mkdir -p "$log_folder/MUI"
+fi
+user_lang=$(locale | grep "LANG=" | cut -d= -f2 | cut -d_ -f1)
+md5_lang_local=`md5sum $log_folder/MUI/$user_lang.lang | cut -f1 -d" " 2>/dev/null`
+md5_lang_remote=`curl -s https://raw.githubusercontent.com/scoony/plex_sort/main/MUI/$user_lang.lang | md5sum | cut -f1 -d" "`
+if [[ ! -f $log_folder/MUI/$user_lang.lang ]] || [[ "$md5_lang_local" != "$md5_lang_remote" ]]; then
+  printf "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[0m[\e[43m  \e[0m] %-56s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Language file updated ($user_lang)"
+  curl -s -m 3 --create-dir -o "$log_folder/MUI/$user_lang.lang" "https://raw.githubusercontent.com/scoony/plex_sort/main/MUI/$user_lang.lang"
+else
+  $printf1 "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[0m[\e[42m  \e[0m] %-56s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Language file up to date ($user_lang)" 2>/dev/null
+fi
+source $log_folder/MUI/$user_lang.lang
+#source ./MUI/$user_lang.lang
+
+
+#######################
 ## Display Mode
 if [[ "$display_mode" == "full" ]] || [[ "$@" =~ "--mode-full" ]]; then
   echo1="echo"
@@ -101,6 +119,10 @@ function display_loading() {
 #  spin='◴◷◶◵'
 #  spin='◐◓◑◒'
 #  spin='⣾⣽⣻⢿⡿⣟⣯⣷'
+  if [[ "$mui_loading_spinner" == "" ]]; then                                               ## MUI
+    mui_loading_spinner="Loading..."                                                        ##
+  fi                                                                                        ##
+  lengh_spinner=${#mui_loading_spinner}
   if [[ "$loading_spinner" == "" ]]; then
     spin='⣾⣽⣻⢿⡿⣟⣯⣷'
   else
@@ -112,30 +134,12 @@ function display_loading() {
   mon_printf="\r                                                                             "
   while kill -0 "$pid" 2>/dev/null; do
     i=$(((i + $charwidth) % ${#spin}))
-    printf "\r[\e[43m \u2713 \e[0m] %10s %s" "Loading..." "${spin:$i:$charwidth}"
+    printf "\r[\e[43m \u2713 \e[0m] %"$lengh_spinner"s %s" "$mui_loading_spinner" "${spin:$i:$charwidth}"
     sleep .1
   done
   tput cnorm
   printf "$mon_printf" && printf "\r"
 }
-
-
-#######################
-## MUI Feature
-if [[ ! -d $log_folder/MUI ]]; then
-  mkdir -p "$log_folder/MUI"
-fi
-user_lang=$(locale | grep "LANG=" | cut -d= -f2 | cut -d_ -f1)
-md5_lang_local=`md5sum $log_folder/MUI/$user_lang.lang | cut -f1 -d" " 2>/dev/null`
-md5_lang_remote=`curl -s https://raw.githubusercontent.com/scoony/plex_sort/main/MUI/$user_lang.lang | md5sum | cut -f1 -d" "`
-if [[ ! -f $log_folder/MUI/$user_lang.lang ]] || [[ "$md5_lang_local" != "$md5_lang_remote" ]]; then
-  printf "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[0m[\e[43m  \e[0m] %-56s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Language file updated ($user_lang)"
-  curl -s -m 3 --create-dir -o "$log_folder/MUI/$user_lang.lang" "https://raw.githubusercontent.com/scoony/plex_sort/main/MUI/$user_lang.lang"
-else
-  $printf1 "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[0m[\e[42m  \e[0m] %-56s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Language file up to date ($user_lang)" 2>/dev/null
-fi
-source $log_folder/MUI/$user_lang.lang
-#source ./MUI/$user_lang.lang
 
 
 #######################
