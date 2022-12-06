@@ -17,8 +17,14 @@ printf "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[1m %-62s  \e[0m \e[46m  \e[0m \e[46m
 #######################
 ## Check if this script is running
 check_dupe=$(ps -ef | grep "$0" | grep -v grep | wc -l | xargs)
-if [[ "$check_dupe" > "2" ]]; then
-  echo "Script already running"
+check_cron=`echo $-`
+if [[ "$check_cron" =~ "i" ]]; then
+  process_number="2"
+else
+  process_number="3"
+fi
+if [[ "$check_dupe" > "$process_number" ]]; then
+  echo "Script already running ($check_dupe)"
   date
   exit 1
 fi
