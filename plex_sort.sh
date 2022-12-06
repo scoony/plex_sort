@@ -7,6 +7,7 @@ if [[ "$@" =~ "--force-update" ]]; then
   echo "Script will be overwrited in /opt/script"
   curl -s -m 3 --create-dir -o "/opt/scripts/plex_sort.sh" "https://raw.githubusercontent.com/scoony/plex_sort/main/plex_sort.sh"
   echo "Process completed... exit"
+  date
   exit 1
 fi
 
