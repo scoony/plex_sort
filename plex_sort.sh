@@ -535,7 +535,10 @@ for folder in $filebot_folders ; do
       ## PEUT ETRE CHERCHER AUTRES EXTENSIONS
       check_medias=`cat $log_folder/$folder.medias.log`
       if [[ "$check_medias" != "" ]]; then
-        filebot -script fn:amc -non-strict --conflict override --lang $filebot_language --encoding UTF-8 --action move "$source_folder_path" --def "$format=$output" --output "$target_folder_path" 2>/dev/null > $log_folder/filebot_output.txt & display_loading $!
+        folder_date=`date +%Y-%m-%d`
+        mkdir -p "$log_folder/logs/$folder_date"
+        timestamp=`date +%H-%M-%S`
+        filebot -script fn:amc -non-strict --conflict override --lang $filebot_language --encoding UTF-8 --action move "$source_folder_path" --def "$format=$output" --output "$target_folder_path" 2>/dev/null > $log_folder/logs/$folder_date/$timestamp-$folder.txt & display_loading $!
 ##        pid=$!
 ##        display_in_progress $pid "$ui_tag_ok Process in progress"
         cat "$log_folder/filebot_output.txt" | grep "\[MOVE\]" > $log_folder/move_done.txt
@@ -680,6 +683,10 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
       file_remove=`sort $log_folder/current_process.txt | head -n1 | grep -oP '(?<=¤).*(?=¤)'`
       if [[ "$file_remove" != "" ]]; then
         trash-put "$file_remove"
+        folder_date=`date +%Y-%m-%d`
+        mkdir -p "$log_folder/logs/$folder_date"
+        timestamp=`date +%H-%M-%S`
+        echo "File sent to the trash:  $file_remove" > $log_folder/logs/$folder_date/$timestamp-dupe.txt 
         if [[ "$mui_dupe_trash" == "" ]]; then                                              ## MUI
           mui_dupe_trash="File sent to trash: $file_remove"                                 ##
         fi                                                                                  ##
