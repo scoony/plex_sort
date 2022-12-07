@@ -541,7 +541,7 @@ for folder in $filebot_folders ; do
         filebot -script fn:amc -non-strict --conflict override --lang $filebot_language --encoding UTF-8 --action move "$source_folder_path" --def "$format=$output" --output "$target_folder_path" 2>/dev/null > $log_folder/logs/$folder_date/$timestamp-$folder.txt & display_loading $!
 ##        pid=$!
 ##        display_in_progress $pid "$ui_tag_ok Process in progress"
-        cat "$log_folder/filebot_output.txt" | grep "\[MOVE\]" > $log_folder/move_done.txt
+        cat "$log_folder/logs/$folder_date/$timestamp-$folder.txt" | grep "\[MOVE\]" > $log_folder/move_done.txt
         filebot_moves=()
         while IFS= read -r -d $'\n'; do
         filebot_moves+=("$REPLY")
