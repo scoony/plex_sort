@@ -693,7 +693,7 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
         source $log_folder/MUI/$user_lang.lang
         echo -e "$ui_tag_ok $mui_dupe_trash"
         if [[ "$push_for_cleaning" == "yes" ]]; then
-          trash_file_date=`date -r "$file_remove" "+%d/%m/%Y"`
+          trash_file_date=$date_file
           trash_file_format=`mediainfo --Inform="Video;%Format%" "$file_remove"`
           trash_file_resolution=`mediainfo --Inform="Video;%Width% x %Height%" "$file_remove"`
           trash_file_duration=`mediainfo --Inform="Video;%Duration/String3%" "$file_remove"`
