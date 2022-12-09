@@ -682,7 +682,6 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
       done
       file_remove=`sort $log_folder/current_process.txt | head -n1 | grep -oP '(?<=¤).*(?=¤)'`
       if [[ "$file_remove" != "" ]]; then
-        trash-put "$file_remove"
         folder_date=`date +%Y-%m-%d`
         mkdir -p "$log_folder/logs/$folder_date"
         timestamp=`date +%H-%M-%S`
@@ -693,13 +692,14 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
         source $log_folder/MUI/$user_lang.lang
         echo -e "$ui_tag_ok $mui_dupe_trash"
         if [[ "$push_for_cleaning" == "yes" ]]; then
-          trash_file_date=$date_file
+          trash_file_date=`date -r "$file_remove" "+%d/%m/%Y"`
           trash_file_format=`mediainfo --Inform="Video;%Format%" "$file_remove"`
           trash_file_resolution=`mediainfo --Inform="Video;%Width% x %Height%" "$file_remove"`
           trash_file_duration=`mediainfo --Inform="Video;%Duration/String3%" "$file_remove"`
           my_push_message=`echo -e "[ <b>DUPE SENT TO TRASH</b> ]\n\n<b>File:</b> $file_remove\n<b>Received: </b>$trash_file_date\n<b>Codec: </b>$trash_file_format\n<b>Resolution: </b>$trash_file_resolution\n<b>Duration: </b>$trash_file_duration"`
           push-message "Plex Sort" "$my_push_message"
         fi
+        trash-put "$file_remove"
       fi
       rm $log_folder/current_process.txt
       echo -e "$ui_tag_warning......"
