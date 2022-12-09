@@ -700,6 +700,7 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
           push-message "Plex Sort" "$my_push_message"
         fi
         trash-put "$file_remove"
+        new_media="1"
       fi
       rm $log_folder/current_process.txt
       echo -e "$ui_tag_warning......"
