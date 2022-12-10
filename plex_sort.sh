@@ -751,13 +751,13 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
     if [[ "$mui_plex_service_bad" == "" ]]; then                                                    ## MUI
       mui_plex_service_bad="Plex service is not running"                                                    ##
     fi                                                                                        ##
-    echo -e "$ui_tag_bad Plex service is not running"
+    echo -e "$ui_tag_bad $mui_plex_service_bad"
   else
     if [[ "$mui_plex_service_ok" == "" ]]; then                                                    ## MUI
       mui_plex_service_ok="Plex service is running (PID: $plex_pid)"                                                    ##
     fi                                                                                        ##
     source $log_folder/MUI/$user_lang.lang
-    $echo1 -e "$ui_tag_ok Plex service is running (PID: $plex_pid)" 2>/dev/null
+    $echo1 -e "$ui_tag_ok $mui_plex_service_ok" 2>/dev/null
   fi
   if [[ "$plex_token" == "" ]] || [[ "$plex_port" == "" ]]; then
     plex_pref=`locate Preferences.xml | grep plexmediaserver | head -n1`
