@@ -11,7 +11,7 @@ if [[ "$@" =~ "--force-update" ]]; then
 fi
 
 
-printf "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[1m %-62s  \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "PLEX SORT"
+printf "\e[46m\u23E5\u23E5   \e[0m \e[46m \e[1m %-61s  \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "PLEX SORT"
 
 
 #######################
@@ -62,10 +62,10 @@ user_lang=$(locale | grep "LANG=" | cut -d= -f2 | cut -d_ -f1)
 md5_lang_local=`md5sum $log_folder/MUI/$user_lang.lang | cut -f1 -d" " 2>/dev/null`
 md5_lang_remote=`curl -s https://raw.githubusercontent.com/scoony/plex_sort/main/MUI/$user_lang.lang | md5sum | cut -f1 -d" "`
 if [[ ! -f $log_folder/MUI/$user_lang.lang ]] || [[ "$md5_lang_local" != "$md5_lang_remote" ]]; then
-  printf "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[0m[\e[43m  \e[0m] %-56s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Language file updated ($user_lang)"
+  printf "\e[46m\u23E5\u23E5   \e[0m \e[46m \e[0m[\e[43m  \e[0m] %-55s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Language file updated ($user_lang)"
   curl -s -m 3 --create-dir -o "$log_folder/MUI/$user_lang.lang" "https://raw.githubusercontent.com/scoony/plex_sort/main/MUI/$user_lang.lang"
 else
-  $printf1 "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[0m[\e[42m  \e[0m] %-56s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Language file up to date ($user_lang)" 2>/dev/null
+  $printf1 "\e[46m\u23E5\u23E5   \e[0m \e[46m \e[0m[\e[42m  \e[0m] %-55s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Language file up to date ($user_lang)" 2>/dev/null
 fi
 source $log_folder/MUI/$user_lang.lang
 #source ./MUI/$user_lang.lang
@@ -81,11 +81,11 @@ if [[ "$crontab_activation" == "yes" ]]; then
   if [[ "$check_crontab" == "" ]]; then
     crontab -l > $log_folder/cron-save.txt
     crontab -l | { cat; echo "$crontab_entry"; } | crontab -
-    printf "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[0m[\e[42m  \e[0m] %-56s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Script installed in cron" 2>/dev/null
+    printf "\e[46m\u23E5\u23E5   \e[0m \e[46m \e[0m[\e[42m  \e[0m] %-55s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Script installed in cron" 2>/dev/null
   elif [[ ${check_crontab:0:1} == '#' ]]; then
-    $printf1 "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[0m[\e[41m  \e[0m] %-56s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Script disabled in cron" 2>/dev/null
+    $printf1 "\e[46m\u23E5\u23E5   \e[0m \e[46m \e[0m[\e[41m  \e[0m] %-55s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Script disabled in cron" 2>/dev/null
   else
-    $printf1 "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[0m[\e[42m  \e[0m] %-56s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Script activated in cron" 2>/dev/null
+    $printf1 "\e[46m\u23E5\u23E5   \e[0m \e[46m \e[0m[\e[42m  \e[0m] %-55s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Script activated in cron" 2>/dev/null
   fi
 fi
 
@@ -157,7 +157,7 @@ ui_tag_warning="[\e[43m \u2713 \e[0m]"
 ui_tag_processed="[\e[43m \u2794 \e[0m]"
 ui_tag_chmod="[\e[43m \u270E \e[0m]" 
 ui_tag_root="[\e[47m \u2713 \e[0m]"
-ui_tag_section="\e[44m\u2263\u2263  \e[0m \e[44m \e[1m %-62s  \e[0m \e[44m  \e[0m \e[44m \e[0m \e[34m\u2759\e[0m\n"
+ui_tag_section="\e[44m[\u2263\u2263\u2263]\e[0m \e[44m \e[1m %-61s  \e[0m \e[44m  \e[0m \e[44m \e[0m \e[34m\u2759\e[0m\n"
 
 
 #######################
@@ -186,7 +186,7 @@ for script_variable in $my_settings_variables ; do
   if [[ ! "$my_config_file" =~ "$script_variable" ]]; then
     description=`echo "desc_"$script_variable`
     echo $script_variable"=\"\"${!description}" >> $my_config
-    printf "\e[46m\u25B6\u25B6  \e[0m [\e[41m  \e[0m] %-56s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Config updated, new variable ($script_variable)"
+    printf "\e[46m\u23E5\u23E5   \e[0m [\e[41m  \e[0m] %-55s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Config updated, new variable ($script_variable)"
     config_updated="1"
   fi
 done
@@ -194,19 +194,19 @@ filebot_folders=`ls "$download_folder" 2>/dev/null | grep -i "filebot"`
 for folder in $filebot_folders ; do
   if [[ ! "$my_config_file" =~ "$folder" ]]; then
     echo $folder"=\"\"" >> $my_config
-    printf "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[0m[\e[41m  \e[0m] %-56s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Config updated, new folder ($folder)"
+    printf "\e[46m\u23E5\u23E5   \e[0m \e[46m \e[0m[\e[41m  \e[0m] %-55s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Config updated, new folder ($folder)"
     echo "... config file updated"
     config_updated="1"
   fi
 done
 if [[ "$config_updated" != "1" ]]; then
-  $printf1 "\e[46m\u25B6\u25B6  \e[0m \e[46m \e[0m[\e[42m  \e[0m] %-56s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Config file is up to date" 2>/dev/null
+  $printf1 "\e[46m\u23E5\u23E5   \e[0m \e[46m \e[0m[\e[42m  \e[0m] %-55s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Config file is up to date" 2>/dev/null
 else
   echo "Edit your config..."
   exit 1
 fi
 
-printf "\e[46m\u25B6\u25B6  \e[0m \e[46m  %62s  \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Version: 0.1"
+printf "\e[46m\u23E5\u23E5   \e[0m \e[46m  %61s  \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Version: 0.1"
 echo ""                                    ## space in between title and sections
 
 
