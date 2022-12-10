@@ -746,6 +746,19 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
     mui_plex_title="Update Plex library"                                                    ##
   fi                                                                                        ##
   printf "$ui_tag_section" "$mui_plex_title"
+  plex_pid=`pidof "Plex Media Server"`
+  if [[ "$plex_pid" == "" ]]; then
+    if [[ "$mui_plex_service_bad" == "" ]]; then                                                    ## MUI
+      mui_plex_service_bad="Plex service is not running"                                                    ##
+    fi                                                                                        ##
+    echo -e "$ui_tag_bad Plex service is not running"
+  else
+    if [[ "$mui_plex_service_ok" == "" ]]; then                                                    ## MUI
+      mui_plex_service_ok="Plex service is running (PID: $plex_pid)"                                                    ##
+    fi                                                                                        ##
+    source $log_folder/MUI/$user_lang.lang
+    $echo1 -e "$ui_tag_ok Plex service is running (PID: $plex_pid)" 2>/dev/null
+  fi
   if [[ "$plex_token" == "" ]] || [[ "$plex_port" == "" ]]; then
     plex_pref=`locate Preferences.xml | grep plexmediaserver | head -n1`
     plex_token_new=`echo $sudo | sudo -kS cat "$plex_pref" 2>/dev/null | grep -o 'Token[^ ]*' | cut -d'"' -f 2`
