@@ -1,5 +1,12 @@
 #!/bin/bash
 
+
+## Attempt to fix printf special char issue
+Lengh1="55"
+Lengh2="61"
+lon() ( echo $(( Lengh1 + $(wc -c <<<"$1") - $(wc -m <<<"$1") )) )
+lon2() ( echo $(( Lengh2 + $(wc -c <<<"$1") - $(wc -m <<<"$1") )) )
+
 #######################
 ## Update Only
 if [[ "$@" =~ "--force-update" ]]; then
@@ -62,10 +69,19 @@ user_lang=$(locale | grep "LANG=" | cut -d= -f2 | cut -d_ -f1)
 md5_lang_local=`md5sum $log_folder/MUI/$user_lang.lang | cut -f1 -d" " 2>/dev/null`
 md5_lang_remote=`curl -s https://raw.githubusercontent.com/scoony/plex_sort/main/MUI/$user_lang.lang | md5sum | cut -f1 -d" "`
 if [[ ! -f $log_folder/MUI/$user_lang.lang ]] || [[ "$md5_lang_local" != "$md5_lang_remote" ]]; then
-  printf "\e[46m\u23E5\u23E5   \e[0m \e[46m \e[0m[\e[43m  \e[0m] %-55s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Language file updated ($user_lang)"
+  if [[ "$mui_lang_updated" == "" ]]; then                                                  ## MUI
+    mui_lang_updated="Language file updated ($user_lang)"                                   ##
+  fi                                                                                        ##
+  source $log_folder/MUI/$user_lang.lang 2>/dev/null
+  printf "\e[46m\u23E5\u23E5   \e[0m \e[46m \e[0m[\e[43m  \e[0m] %-*s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" $(lon "$mui_lang_updated") "$mui_lang_updated"
   curl -s -m 3 --create-dir -o "$log_folder/MUI/$user_lang.lang" "https://raw.githubusercontent.com/scoony/plex_sort/main/MUI/$user_lang.lang"
 else
-  $printf1 "\e[46m\u23E5\u23E5   \e[0m \e[46m \e[0m[\e[42m  \e[0m] %-55s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Language file up to date ($user_lang)" 2>/dev/null
+  if [[ "$mui_lang_ok" == "" ]]; then                                                       ## MUI
+    mui_lang_ok="Language file up to date ($user_lang)"                                     ##
+  fi                                                                                        ##
+  source $log_folder/MUI/$user_lang.lang 2>/dev/null
+##  $printf1 "\e[46m\u23E5\u23E5   \e[0m \e[46m \e[0m[\e[42m  \e[0m] %-55s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "$mui_lang_ok" 2>/dev/null
+  $printf1 "\e[46m\u23E5\u23E5   \e[0m \e[46m \e[0m[\e[42m  \e[0m] %-*s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" $(lon "$mui_lang_ok") "$mui_lang_ok" 2>/dev/null
 fi
 source $log_folder/MUI/$user_lang.lang
 #source ./MUI/$user_lang.lang
@@ -84,17 +100,17 @@ if [[ "$crontab_activation" == "yes" ]]; then
     if [[ "$mui_cron_installed" == "" ]]; then                                              ## MUI
       mui_cron_installed="Script installed in cron"                                         ##
     fi                                                                                      ##
-    printf "\e[46m\u23E5\u23E5   \e[0m \e[46m \e[0m[\e[42m  \e[0m] %-55s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "$mui_cron_installed" 2>/dev/null
+    printf "\e[46m\u23E5\u23E5   \e[0m \e[46m \e[0m[\e[42m  \e[0m] %-*s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" $(lon "$mui_cron_installed") "$mui_cron_installed" 2>/dev/null
   elif [[ ${check_crontab:0:1} == '#' ]]; then
     if [[ "$mui_cron_disabled" == "" ]]; then                                               ## MUI
       mui_cron_disabled="Script disabled in cron"                                           ##
     fi                                                                                      ##
-    $printf1 "\e[46m\u23E5\u23E5   \e[0m \e[46m \e[0m[\e[41m  \e[0m] %-55s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "$mui_cron_disabled" 2>/dev/null
+    $printf1 "\e[46m\u23E5\u23E5   \e[0m \e[46m \e[0m[\e[41m  \e[0m] %-*s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" $(lon "$mui_cron_disabled") "$mui_cron_disabled" 2>/dev/null
   else
     if [[ "$mui_cron_enabled" == "" ]]; then                                                ## MUI
       mui_cron_enabled="Script enabled in cron"                                             ##
     fi                                                                                      ##
-    $printf1 "\e[46m\u23E5\u23E5   \e[0m \e[46m \e[0m[\e[42m  \e[0m] %-55s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "$mui_cron_enabled" 2>/dev/null
+    $printf1 "\e[46m\u23E5\u23E5   \e[0m \e[46m \e[0m[\e[42m  \e[0m] %-*s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" $(lon "$mui_cron_enabled") "$mui_cron_enabled" 2>/dev/null
   fi
 fi
 
@@ -170,7 +186,7 @@ ui_tag_warning="[\e[43m \u2713 \e[0m]"
 ui_tag_processed="[\e[43m \u2794 \e[0m]"
 ui_tag_chmod="[\e[43m \u270E \e[0m]" 
 ui_tag_root="[\e[47m \u2713 \e[0m]"
-ui_tag_section="\e[44m[\u2263\u2263\u2263]\e[0m \e[44m \e[1m %-61s  \e[0m \e[44m  \e[0m \e[44m \e[0m \e[34m\u2759\e[0m\n"
+ui_tag_section="\e[44m[\u2263\u2263\u2263]\e[0m \e[44m \e[1m %-*s  \e[0m \e[44m  \e[0m \e[44m \e[0m \e[34m\u2759\e[0m\n"
 
 
 #######################
@@ -203,7 +219,7 @@ for script_variable in $my_settings_variables ; do
       mui_config_new_variable="Config updated, new variable ($script_variable)"             ##
     fi                                                                                      ##
     source $log_folder/MUI/$user_lang.lang
-    printf "\e[46m\u23E5\u23E5   \e[0m [\e[41m  \e[0m] %-55s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "$mui_config_new_variable"
+    printf "\e[46m\u23E5\u23E5   \e[0m [\e[41m  \e[0m] %-*s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" $(lon "$mui_config_new_variable") "$mui_config_new_variable"
     config_updated="1"
   fi
 done
@@ -215,7 +231,7 @@ for folder in $filebot_folders ; do
       mui_config_new_folder="Config updated, new folder ($folder)"                          ##
     fi                                                                                      ##
     source $log_folder/MUI/$user_lang.lang
-    printf "\e[46m\u23E5\u23E5   \e[0m \e[46m \e[0m[\e[41m  \e[0m] %-55s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "$mui_config_new_folder"
+    printf "\e[46m\u23E5\u23E5   \e[0m \e[46m \e[0m[\e[41m  \e[0m] %-*s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" $(lon "$mui_config_new_folder") "$mui_config_new_folder"
     echo "... config file updated"
     config_updated="1"
   fi
@@ -224,7 +240,7 @@ if [[ "$config_updated" != "1" ]]; then
   if [[ "$mui_config_ok" == "" ]]; then                                                     ## MUI
     mui_config_ok="Config file is up to date"                                               ##
   fi                                                                                        ##
-  $printf1 "\e[46m\u23E5\u23E5   \e[0m \e[46m \e[0m[\e[42m  \e[0m] %-55s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "$mui_config_ok" 2>/dev/null
+  $printf1 "\e[46m\u23E5\u23E5   \e[0m \e[46m \e[0m[\e[42m  \e[0m] %-*s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" $(lon "$mui_config_ok") "$mui_config_ok" 2>/dev/null
 else
   echo "Edit your config..."
   exit 1
@@ -239,7 +255,7 @@ echo ""                                    ## space in between title and section
 if [[ "$mui_root_title" == "" ]]; then                                                      ## MUI
   mui_root_title="Check account used"                                                       ##
 fi                                                                                          ##
-$printf1 "$ui_tag_section" "$mui_root_title" 2>/dev/null
+$printf1 "$ui_tag_section" $(lon2 "$mui_root_title") "$mui_root_title" 2>/dev/null
 if [[ "$EUID" == "0" ]] || [[ "$sudo" != "" ]]; then
   if [[ "$mui_root_used" == "" ]]; then                                                     ## MUI
     mui_root_used="Root privileges granted"                                                 ##
@@ -279,7 +295,7 @@ fi
 if [[ "$mui_dependencies_title" == "" ]]; then                                              ## MUI
   mui_dependencies_title="Install / Check dependencies"                                     ##
 fi                                                                                          ##
-$printf1 "$ui_tag_section" "$mui_dependencies_title" 2>/dev/null
+$printf1 "$ui_tag_section" $(lon2 "$mui_dependencies_title") "$mui_dependencies_title" 2>/dev/null
 my_dependencies="filebot curl awk trash-put"
 for dependency in $my_dependencies ; do
   if $dependency -help > /dev/null 2>/dev/null ; then
@@ -317,7 +333,7 @@ $echo1 "" 2>/dev/null
 if [[ "$mui_filebot_title" == "" ]]; then                                                   ## MUI
   mui_filebot_title="Check FileBot licence"                                                 ##
 fi                                                                                          ##
-$printf1 "$ui_tag_section" "$mui_filebot_title" 2>/dev/null
+$printf1 "$ui_tag_section" $(lon2 "$mui_filebot_title") "$mui_filebot_title" 2>/dev/null
 if [[ ! -f $log_folder/.licence ]]; then
   echo ""
   check_local_licence=`filebot -script fn:sysinfo script | grep "Valid-Until"`
@@ -349,7 +365,7 @@ fi
 if [[ "$mui_update_title" == "" ]]; then                                                    ## MUI
   mui_update_title="Internet availability and Update"                                       ##
 fi                                                                                          ##
-printf "$ui_tag_section" "$mui_update_title"
+printf "$ui_tag_section" $(lon2 "$mui_update_title") "$mui_update_title"
 if curl -s -m 3 --head --request GET https://github$update_allowed.com > /dev/null; then 
   remote_md5=`curl -s https://raw.githubusercontent.com/scoony/plex_sort/main/plex_sort.sh | md5sum | cut -f1 -d" "`
   local_md5=`md5sum $0 | cut -f1 -d" "`
@@ -418,7 +434,7 @@ echo ""
 if [[ "$mui_plex_folder_title" == "" ]]; then                                               ## MUI
   mui_plex_folder_title="Detect Plex folders"                                               ##
 fi                                                                                          ##
-printf "$ui_tag_section" "$mui_plex_folder_title"
+printf "$ui_tag_section" $(lon2 "$mui_plex_folder_title") "$mui_plex_folder_title"
 plex_folders=`ls -d $mount_folder/*/$plex_folder/`
 for plex_path in $plex_folders ; do
   if [[ ! "$exclude_folders" =~ "$plex_path" ]]; then
@@ -457,7 +473,7 @@ echo ""
 if [[ "$mui_download_title" == "" ]]; then                                                  ## MUI
   mui_download_title="Detect download folders"                                              ##
 fi                                                                                          ##
-printf "$ui_tag_section" "$mui_download_title"
+printf "$ui_tag_section" $(lon2 "$mui_download_title") "$mui_download_title"
 filebot_folders=`ls "$download_folder" | grep -i "filebot"`
 overall_download_free=`df -k --output=avail "$download_folder" | tail -n1`
 if [[ "$overall_download_free" -le "50000000" ]]; then
@@ -525,7 +541,7 @@ echo ""
 if [[ "$mui_sorting_title" == "" ]]; then                                                   ## MUI
   mui_sorting_title="Sorting process"                                                       ##
 fi                                                                                          ##
-printf "$ui_tag_section" "$mui_sorting_title"
+printf "$ui_tag_section" $(lon2 "$mui_sorting_title") "$mui_sorting_title"
 for folder in $filebot_folders ; do
   source_folder_path=`echo $download_folder"/"$folder`
   target_conf=${!folder}
@@ -633,7 +649,7 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
   if [[ "$mui_dupe_title" == "" ]]; then                                                    ## MUI
     mui_dupe_title="Dupe checker/cleaner"                                                   ##
   fi                                                                                        ##
-  printf "$ui_tag_section" "$mui_dupe_title"
+  printf "$ui_tag_section" $(lon2 "$mui_dupe_title") "$mui_dupe_title"
   if [[ "$mui_dupe_generating" == "" ]]; then                                               ## MUI
     mui_dupe_generating="Generating Plex content DBs"                                       ##
   fi                                                                                        ##
@@ -752,7 +768,7 @@ fi
 if [[ "$mui_cleaning_title" == "" ]]; then                                                  ## MUI
   mui_cleaning_title="Clean download folders"                                               ##
 fi                                                                                          ##
-printf "$ui_tag_section" "$mui_cleaning_title"
+printf "$ui_tag_section" $(lon2 "$mui_cleaning_title") "$mui_cleaning_title"
 filebot_folders=`ls "$download_folder" | grep -i "filebot"`
 for folder in $filebot_folders ; do
   folder_path=`echo $download_folder"/"$folder`
@@ -777,7 +793,7 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
   if [[ "$mui_plex_title" == "" ]]; then                                                    ## MUI
     mui_plex_title="Update Plex library"                                                    ##
   fi                                                                                        ##
-  printf "$ui_tag_section" "$mui_plex_title"
+  printf "$ui_tag_section" $(lon2 "$mui_plex_title") "$mui_plex_title"
   plex_pid=`pidof "Plex Media Server"`
   if [[ "$plex_pid" == "" ]]; then
     if [[ "$mui_plex_service_bad" == "" ]]; then                                            ## MUI
