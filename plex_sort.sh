@@ -1,11 +1,13 @@
 #!/bin/bash
 
 
+#######################
 ## Attempt to fix printf special char issue
 Lengh1="55"
 Lengh2="61"
 lon() ( echo $(( Lengh1 + $(wc -c <<<"$1") - $(wc -m <<<"$1") )) )
 lon2() ( echo $(( Lengh2 + $(wc -c <<<"$1") - $(wc -m <<<"$1") )) )
+
 
 #######################
 ## Update Only
