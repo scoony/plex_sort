@@ -196,13 +196,14 @@ ui_tag_section="\e[44m[\u2263\u2263\u2263]\e[0m \e[44m \e[1m %-*s  \e[0m \e[44m 
 if [[ ! -f "$my_config" ]]; then
   touch $my_config
 fi
-my_settings_variables="display_mode crontab_entry mount_folder plex_folder download_folder exclude_folders filebot_language filebot_season_folder log_folder token_app target_1 target_2 push_for_move push_for_cleaning update_allowed"
+my_settings_variables="display_mode crontab_entry mount_folder plex_folder download_folder exclude_folders dupe_extensions_filter filebot_language filebot_season_folder log_folder token_app target_1 target_2 push_for_move push_for_cleaning update_allowed"
 desc_display_mode=" ## (optional) \"full\" for full display output"
 desc_crontab_entry=" ## (optional) custom crontab"
 desc_mount_folder=" ## where are mounted your drives (usually \"/mnt\")"
 desc_plex_folder=" ## foldername containing your Plex content in each drive (usually \"Plex\")"
 desc_download_folder=" ## where your download folders are located (personally \"/mnt/sdb1/Downloads\")"
 desc_exclude_folders=" ## Plex folders to exclude (example: \"/mnt/sdb1/Plex\")"
+desc_dupe_extensions_filter=" ## (optional) Search only those extensions for dupes, separate by pipes"
 desc_filebot_language=" ## \"fr\" for french or \"en\" for english (example)" 
 desc_filebot_season_folder=" ## Directory name of the Season folders (\"Saison\" in french, \"Season\" in english...)"
 desc_log_folder=" ## (optional) custom log folder location"
@@ -221,7 +222,7 @@ for script_variable in $my_settings_variables ; do
       mui_config_new_variable="Config updated, new variable ($script_variable)"             ##
     fi                                                                                      ##
     source $log_folder/MUI/$user_lang.lang
-    printf "\e[46m\u23E5\u23E5   \e[0m [\e[41m  \e[0m] %-*s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" $(lon "$mui_config_new_variable") "$mui_config_new_variable"
+    printf "\e[46m\u23E5\u23E5   \e[0m \e[46m \e[0m[\e[41m  \e[0m] %-*s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" $(lon "$mui_config_new_variable") "$mui_config_new_variable"
     config_updated="1"
   fi
 done
@@ -674,7 +675,10 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
   locate_dbs=`ls $log_folder/*.locate.db`
   locate_path=`echo $locate_dbs | sed 's/ /:/g'`
   echo $sudo | sudo -kS locate -d $locate_path: . 2>/dev/null > $log_folder/full_plex.txt                                                 ## dump the whole dbs in a single file
-  cat $log_folder/full_plex.txt | egrep -i ".mkv$|.avi$|.mp4$|.m4v$|.ogm$|.divx$|.ts$|.mp3$|.mpg$" > $log_folder/full_plex_clean.txt      ## remove everything except medias
+  if [[ "$dupe_extensions_filter" == "" ]]; then
+    dupe_extensions_filter=".mkv$|.avi$|.mp4$|.m4v$|.ogm$|.divx$|.ts$|.mp3$|.mpg$"
+  fi
+  cat $log_folder/full_plex.txt | egrep -i "$dupe_extensions_filter" > $log_folder/full_plex_clean.txt      ## remove everything except medias
   my_files=()
   while IFS= read -r -d $'\n'; do
   my_files+=("$REPLY")
