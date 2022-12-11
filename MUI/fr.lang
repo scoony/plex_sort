@@ -1,6 +1,12 @@
 #!/bin/bash
 ## Language file
 
+mui_cron_installed="Script installé dans le cron"
+mui_cron_disabled="Script désactivé dans le cron"
+mui_cron_activated="Script activé dans le cron"
+mui_config_new_variable="Configuration mise à jour, nouvelle variable ($script_variable)"
+mui_config_new_folder="Configuration mise à jour, dossier ajouté ($folder)"
+mui_config_ok="Le fichier de configuration est à jour"
 mui_loading_spinner="Chargement..."
 mui_root_title="Verification des droits"
 mui_root_used="Privilèges root accordés"
@@ -27,6 +33,7 @@ mui_plex_folder_drive="Dossier Plex: $plex_path (libre: $plex_path_free_human)"
 mui_plex_folder_chmod="Permissions (lecture/écriture/exécution) appliquées"
 mui_plex_folder_best="Meilleure cible: $best_plex_target ($best_free )"
 mui_download_title="Detection des dossiers de telechargement"
+mui_download_free="Manque de place dans les dossiers de download (moins de 50G)"
 mui_download_folder="Dossier: $folder"
 mui_download_folder_path="Chemin: $folder_path"
 mui_download_rights="Permissions (lecture/écriture/exécution) appliquées"

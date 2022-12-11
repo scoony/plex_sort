@@ -81,11 +81,20 @@ if [[ "$crontab_activation" == "yes" ]]; then
   if [[ "$check_crontab" == "" ]]; then
     crontab -l > $log_folder/cron-save.txt
     crontab -l | { cat; echo "$crontab_entry"; } | crontab -
-    printf "\e[46m\u23E5\u23E5   \e[0m \e[46m \e[0m[\e[42m  \e[0m] %-55s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Script installed in cron" 2>/dev/null
+    if [[ "$mui_cron_installed" == "" ]]; then                                              ## MUI
+      mui_cron_installed="Script installed in cron"                                         ##
+    fi                                                                                      ##
+    printf "\e[46m\u23E5\u23E5   \e[0m \e[46m \e[0m[\e[42m  \e[0m] %-55s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "$mui_cron_installed" 2>/dev/null
   elif [[ ${check_crontab:0:1} == '#' ]]; then
-    $printf1 "\e[46m\u23E5\u23E5   \e[0m \e[46m \e[0m[\e[41m  \e[0m] %-55s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Script disabled in cron" 2>/dev/null
+    if [[ "$mui_cron_disabled" == "" ]]; then                                               ## MUI
+      mui_cron_disabled="Script disabled in cron"                                           ##
+    fi                                                                                      ##
+    $printf1 "\e[46m\u23E5\u23E5   \e[0m \e[46m \e[0m[\e[41m  \e[0m] %-55s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "$mui_cron_disabled" 2>/dev/null
   else
-    $printf1 "\e[46m\u23E5\u23E5   \e[0m \e[46m \e[0m[\e[42m  \e[0m] %-55s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Script activated in cron" 2>/dev/null
+    if [[ "$mui_cron_enabled" == "" ]]; then                                                ## MUI
+      mui_cron_enabled="Script enabled in cron"                                             ##
+    fi                                                                                      ##
+    $printf1 "\e[46m\u23E5\u23E5   \e[0m \e[46m \e[0m[\e[42m  \e[0m] %-55s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "$mui_cron_enabled" 2>/dev/null
   fi
 fi
 
@@ -95,6 +104,10 @@ fi
 push-message() {
   push_title=$1
   push_content=$2
+  push_priority=$3
+  if [[ "$push_priority" == "" ]]; then
+    push_priority="-1"
+  fi
   for user in {1..10}; do
     target=`eval echo "\\$target_"$user`
     if [ -n "$target" ]; then
@@ -104,7 +117,7 @@ push-message() {
         --form-string "title=$push_title" \
         --form-string "message=$push_content" \
         --form-string "html=1" \
-        --form-string "priority=0" \
+        --form-string "priority=$push_priority" \
         https://api.pushover.net/1/messages.json > /dev/null
     fi
   done
@@ -186,7 +199,11 @@ for script_variable in $my_settings_variables ; do
   if [[ ! "$my_config_file" =~ "$script_variable" ]]; then
     description=`echo "desc_"$script_variable`
     echo $script_variable"=\"\"${!description}" >> $my_config
-    printf "\e[46m\u23E5\u23E5   \e[0m [\e[41m  \e[0m] %-55s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Config updated, new variable ($script_variable)"
+    if [[ "$mui_config_new_variable" == "" ]]; then                                         ## MUI
+      mui_config_new_variable="Config updated, new variable ($script_variable)"             ##
+    fi                                                                                      ##
+    source $log_folder/MUI/$user_lang.lang
+    printf "\e[46m\u23E5\u23E5   \e[0m [\e[41m  \e[0m] %-55s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "$mui_config_new_variable"
     config_updated="1"
   fi
 done
@@ -194,13 +211,20 @@ filebot_folders=`ls "$download_folder" 2>/dev/null | grep -i "filebot"`
 for folder in $filebot_folders ; do
   if [[ ! "$my_config_file" =~ "$folder" ]]; then
     echo $folder"=\"\"" >> $my_config
-    printf "\e[46m\u23E5\u23E5   \e[0m \e[46m \e[0m[\e[41m  \e[0m] %-55s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Config updated, new folder ($folder)"
+    if [[ "$mui_config_new_folder" == "" ]]; then                                           ## MUI
+      mui_config_new_folder="Config updated, new folder ($folder)"                          ##
+    fi                                                                                      ##
+    source $log_folder/MUI/$user_lang.lang
+    printf "\e[46m\u23E5\u23E5   \e[0m \e[46m \e[0m[\e[41m  \e[0m] %-55s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "$mui_config_new_folder"
     echo "... config file updated"
     config_updated="1"
   fi
 done
 if [[ "$config_updated" != "1" ]]; then
-  $printf1 "\e[46m\u23E5\u23E5   \e[0m \e[46m \e[0m[\e[42m  \e[0m] %-55s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "Config file is up to date" 2>/dev/null
+  if [[ "$mui_config_ok" == "" ]]; then                                                     ## MUI
+    mui_config_ok="Config file is up to date"                                               ##
+  fi                                                                                        ##
+  $printf1 "\e[46m\u23E5\u23E5   \e[0m \e[46m \e[0m[\e[42m  \e[0m] %-55s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "$mui_config_ok" 2>/dev/null
 else
   echo "Edit your config..."
   exit 1
@@ -435,6 +459,14 @@ if [[ "$mui_download_title" == "" ]]; then                                      
 fi                                                                                          ##
 printf "$ui_tag_section" "$mui_download_title"
 filebot_folders=`ls "$download_folder" | grep -i "filebot"`
+overall_download_free=`df -k --output=avail "$download_folder" | tail -n1`
+if [[ "$overall_download_free" -le "50000000" ]]; then
+  if [[ "$mui_download_free" == "" ]]; then                                                 ## MUI
+    mui_download_free="Not enough space in download folders (less then 50G)"                ##
+  fi                                                                                        ##
+  echo -e "$ui_tag_bad $mui_download_free"
+  push-message "Plex Sort" "Check download folders, less then 50G free detected" "1"
+fi
 for folder in $filebot_folders ; do
   if [[ "$mui_download_folder" == "" ]]; then                                               ## MUI
     mui_download_folder="Folder: $folder"                                                   ##
@@ -748,14 +780,14 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
   printf "$ui_tag_section" "$mui_plex_title"
   plex_pid=`pidof "Plex Media Server"`
   if [[ "$plex_pid" == "" ]]; then
-    if [[ "$mui_plex_service_bad" == "" ]]; then                                                    ## MUI
-      mui_plex_service_bad="Plex service is not running"                                                    ##
-    fi                                                                                        ##
+    if [[ "$mui_plex_service_bad" == "" ]]; then                                            ## MUI
+      mui_plex_service_bad="Plex service is not running"                                    ##
+    fi                                                                                      ##
     echo -e "$ui_tag_bad $mui_plex_service_bad"
   else
-    if [[ "$mui_plex_service_ok" == "" ]]; then                                                    ## MUI
-      mui_plex_service_ok="Plex service is running (PID: $plex_pid)"                                                    ##
-    fi                                                                                        ##
+    if [[ "$mui_plex_service_ok" == "" ]]; then                                             ## MUI
+      mui_plex_service_ok="Plex service is running (PID: $plex_pid)"                        ##
+    fi                                                                                      ##
     source $log_folder/MUI/$user_lang.lang
     $echo1 -e "$ui_tag_ok $mui_plex_service_ok" 2>/dev/null
   fi
