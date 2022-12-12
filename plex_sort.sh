@@ -85,8 +85,13 @@ else
 ##  $printf1 "\e[46m\u23E5\u23E5   \e[0m \e[46m \e[0m[\e[42m  \e[0m] %-55s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "$mui_lang_ok" 2>/dev/null
   $printf1 "\e[46m\u23E5\u23E5   \e[0m \e[46m \e[0m[\e[42m  \e[0m] %-*s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" $(lon "$mui_lang_ok") "$mui_lang_ok" 2>/dev/null
 fi
-source $log_folder/MUI/$user_lang.lang
-#source ./MUI/$user_lang.lang
+if [[ -f ./MUI/$user_lang.lang ]]; then
+  source ./MUI/$user_lang.lang
+  my_language_file="./MUI/$user_lang.lang"
+else
+  source $log_folder/MUI/$user_lang.lang
+  my_language_file="$log_folder/MUI/$user_lang.lang"
+fi
 
 
 #######################
@@ -221,7 +226,7 @@ for script_variable in $my_settings_variables ; do
     if [[ "$mui_config_new_variable" == "" ]]; then                                         ## MUI
       mui_config_new_variable="Config updated, new variable ($script_variable)"             ##
     fi                                                                                      ##
-    source $log_folder/MUI/$user_lang.lang
+    source $my_language_file
     printf "\e[46m\u23E5\u23E5   \e[0m \e[46m \e[0m[\e[41m  \e[0m] %-*s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" $(lon "$mui_config_new_variable") "$mui_config_new_variable"
     config_updated="1"
   fi
@@ -233,7 +238,7 @@ for folder in $filebot_folders ; do
     if [[ "$mui_config_new_folder" == "" ]]; then                                           ## MUI
       mui_config_new_folder="Config updated, new folder ($folder)"                          ##
     fi                                                                                      ##
-    source $log_folder/MUI/$user_lang.lang
+    source $my_language_file
     printf "\e[46m\u23E5\u23E5   \e[0m \e[46m \e[0m[\e[41m  \e[0m] %-*s  \e[0m]\e[46m \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" $(lon "$mui_config_new_folder") "$mui_config_new_folder"
     echo "... config file updated"
     config_updated="1"
@@ -446,7 +451,7 @@ for plex_path in $plex_folders ; do
     if [[ "$mui_plex_folder_drive" == "" ]]; then                                           ## MUI
       mui_plex_folder_drive="Plex folder: $plex_path (free: $plex_path_free_human)"         ##
     fi                                                                                      ##
-    source $log_folder/MUI/$user_lang.lang
+    source $my_language_file
     $echo1 -e "$ui_tag_ok $mui_plex_folder_drive" 2>/dev/null
     if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo" == "1" ]]; then
       echo $sudo | sudo -kS chmod -R 777 "$plex_path" 2>/dev/null
@@ -466,7 +471,7 @@ $echo1 "" 2>/dev/null
 if [[ "$mui_plex_folder_best" == "" ]]; then                                                ## MUI
   mui_plex_folder_best="Best target: $best_plex_target ($best_free )"                       ##
 fi                                                                                          ##
-  source $log_folder/MUI/$user_lang.lang
+  source $my_language_file
 echo -e "$ui_tag_ok $mui_plex_folder_best"
 echo ""
 
@@ -484,19 +489,23 @@ if [[ "$overall_download_free" -le "50000000" ]]; then
     mui_download_free="Not enough space in download folders (less then 50G)"                ##
   fi                                                                                        ##
   echo -e "$ui_tag_bad $mui_download_free"
-  push-message "Plex Sort" "Check download folders, less then 50G free detected" "1"
+  if [[ "$mui_push_message_download_full" == "" ]]; then                                                 ## MUI
+    mui_push_message_download_full="[ <b>DISK FULL</b> ]\n\nThere is less then 50Gb in the download hard drive"                ##
+  fi                                                                                        ##
+  my_message=` echo -e "$mui_push_message_download_full"`
+  push-message "Plex Sort" "$my_message" "1"
 fi
 for folder in $filebot_folders ; do
   if [[ "$mui_download_folder" == "" ]]; then                                               ## MUI
     mui_download_folder="Folder: $folder"                                                   ##
   fi                                                                                        ##
-  source $log_folder/MUI/$user_lang.lang
+  source $my_language_file
   echo -e "$ui_tag_ok $mui_download_folder"
   folder_path=`echo $download_folder"/"$folder`
   if [[ "$mui_download_folder_path" == "" ]]; then                                          ## MUI
     mui_download_folder_path="Path: $folder_path"                                           ##
   fi                                                                                        ##
-  source $log_folder/MUI/$user_lang.lang
+  source $my_language_file
   $echo1 -e "$ui_tag_ok $mui_download_folder_path" 2>/dev/null
   if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo" == "1" ]]; then
     echo $sudo | sudo -kS chmod -R 777 "$folder_path" 2>/dev/null
@@ -510,7 +519,7 @@ for folder in $filebot_folders ; do
     if [[ "$mui_download_conf_ok" == "" ]]; then                                            ## MUI
       mui_download_conf_ok="Config setting: $check_conf"                                    ##
     fi                                                                                      ##
-    source $log_folder/MUI/$user_lang.lang
+    source $my_language_file
     $echo1 -e "$ui_tag_ok $mui_download_conf_ok" 2>/dev/null
   else
     if [[ "$mui_download_missing" == "" ]]; then                                            ## MUI
@@ -534,7 +543,7 @@ rm $log_folder/temp.log
 if [[ "$mui_download_df_required" == "" ]]; then                                            ## MUI
   mui_download_df_required="Space required to store content: $space_required_human"         ##
 fi                                                                                          ##
-source $log_folder/MUI/$user_lang.lang
+source $my_language_file
 echo -e "$ui_tag_ok $mui_download_df_required"
 echo ""
 
@@ -551,7 +560,7 @@ for folder in $filebot_folders ; do
   if [[ "$mui_sorting_resume" == "" ]]; then                                                ## MUI
     mui_sorting_resume="Source: $folder - Target: $target_conf"                             ##
   fi                                                                                        ##
-  source $log_folder/MUI/$user_lang.lang
+  source $my_language_file
   echo -e "$ui_tag_ok $mui_sorting_resume"
   if [[ "$target_conf" == "" ]]; then
     if [[ "$mui_sorting_no_config" == "" ]]; then                                           ## MUI
@@ -564,7 +573,7 @@ for folder in $filebot_folders ; do
     if [[ "$mui_sorting_target_path" == "" ]]; then                                         ## MUI
       mui_sorting_target_path="Content destination: $target_folder_path"                    ##
     fi                                                                                      ##
-    source $log_folder/MUI/$user_lang.lang
+    source $my_language_file
     $echo1 -e "$ui_tag_ok $mui_sorting_target_path" 2>/dev/null
     if [[ "${folder,,}" =~ "film" ]] || [[ "${folder,,}" =~ "movie" ]]; then
       agent="TheMovieDB"
@@ -578,7 +587,7 @@ for folder in $filebot_folders ; do
     if [[ "$mui_sorting_agent" == "" ]]; then                                               ## MUI
       mui_sorting_agent="Agent used: $agent"                                                ##
     fi                                                                                      ##
-    source $log_folder/MUI/$user_lang.lang
+    source $my_language_file
     $echo1 -e "$ui_tag_ok $mui_sorting_agent" 2>/dev/null
     allow_agent=${!agent}
     if [[ "$allow_agent" != "1" ]]; then
@@ -611,19 +620,23 @@ for folder in $filebot_folders ; do
             if [[ "$mui_sorting_source" == "" ]]; then                                      ## MUI
               mui_sorting_source="Source: $move_source"                                     ##
             fi                                                                              ##
-            source $log_folder/MUI/$user_lang.lang
+            source $my_language_file
             echo -e "$ui_tag_processed $mui_sorting_source"
             if [[ "$mui_sorting_target" == "" ]]; then                                      ## MUI
               mui_sorting_target="Target: $move_target"                                     ##
             fi                                                                              ##
-            source $log_folder/MUI/$user_lang.lang
+            source $my_language_file
             echo -e "$ui_tag_processed $mui_sorting_target"
             new_media="1"
             if [[ "$push_for_move" == "yes" ]]; then
               file_source=`basename "$move_source"`
               file_target=`basename "$move_target"`
               target_folder=`dirname "$move_target"`
-              my_message=` echo -e "[ <b>MEDIA MOVED</b> ] [ <b>$target_conf</b> ]\n\n<b>Source Name: </b>$file_source\n<b>Target Name: </b>$file_target\n\n<b>Destination: </b>$target_folder"`
+              if [[ "$mui_push_message_move" == "" ]]; then                                                 ## MUI
+                mui_push_message_move="[ <b>MEDIA MOVED</b> ] [ <b>$target_conf</b> ]\n\n<b>Source Name: </b>$file_source\n<b>Target Name: </b>$file_target\n\n<b>Destination: </b>$target_folder"                ##
+              fi                                                                                        ##
+              source $my_language_file
+              my_message=` echo -e "$mui_push_message_move"`
               push-message "Plex Sort" "$my_message"
             fi
           done
@@ -633,7 +646,7 @@ for folder in $filebot_folders ; do
       if [[ "$mui_sorting_offline" == "" ]]; then                                           ## MUI
         mui_sorting_offline="$agent is offline, skipping"                                   ##
       fi                                                                                    ##
-      source $log_folder/MUI/$user_lang.lang
+      source $my_language_file
       echo -e "$ui_tag_bad $mui_sorting_offline"
     fi
   fi
@@ -665,7 +678,7 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
     if [[ "$mui_dupe_db" == "" ]]; then                                                     ## MUI
     mui_dupe_db="Folder: $folder_db (DB: $disk_db_id.locate.db)"                            ##
   fi                                                                                        ##
-    source $log_folder/MUI/$user_lang.lang
+    source $my_language_file
     $echo1 -e "$ui_tag_ok $mui_dupe_db" 2>/dev/null
     echo $sudo | sudo -kS updatedb -U "$folder_db" -o "$log_folder/$disk_db_id.locate.db" 2>/dev/null & display_loading $!
 ##    pid=$!
@@ -702,7 +715,7 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
   if [[ "$mui_dupe_extracting_done" == "" ]]; then                                          ## MUI
     mui_dupe_extracting_done="Extraction completed (in "$duration"s)"                       ##
   fi                                                                                        ##
-  source $log_folder/MUI/$user_lang.lang
+  source $my_language_file
   echo -e "$ui_tag_ok $mui_dupe_extracting_done"
   cat $log_folder/files_done.txt | sort | uniq -cd > $log_folder/dupes.txt                                                                       ## search for dupes
   rm $log_folder/files_done.txt
@@ -731,7 +744,7 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
         if [[ "$mui_dupe_file" == "" ]]; then                                               ## MUI
           mui_dupe_file="Dupe Found: $k Date: $date_file"                                   ##
         fi                                                                                  ##
-        source $log_folder/MUI/$user_lang.lang
+        source $my_language_file
         echo -e "$ui_tag_warning $mui_dupe_file"
       done
       file_remove=`sort $log_folder/current_process.txt | head -n1 | grep -oP '(?<=¤).*(?=¤)'`
@@ -743,15 +756,19 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
         if [[ "$mui_dupe_trash" == "" ]]; then                                              ## MUI
           mui_dupe_trash="File sent to trash: $file_remove"                                 ##
         fi                                                                                  ##
-        source $log_folder/MUI/$user_lang.lang
+        source $my_language_file
         echo -e "$ui_tag_ok $mui_dupe_trash"
         if [[ "$push_for_cleaning" == "yes" ]]; then
           trash_file_date=`date -r "$file_remove" "+%d/%m/%Y"`
           trash_file_format=`mediainfo --Inform="Video;%Format%" "$file_remove"`
           trash_file_resolution=`mediainfo --Inform="Video;%Width% x %Height%" "$file_remove"`
           trash_file_duration=`mediainfo --Inform="Video;%Duration/String3%" "$file_remove"`
-          my_push_message=`echo -e "[ <b>DUPE SENT TO TRASH</b> ]\n\n<b>File:</b> $file_remove\n<b>Received: </b>$trash_file_date\n<b>Codec: </b>$trash_file_format\n<b>Resolution: </b>$trash_file_resolution\n<b>Duration: </b>$trash_file_duration"`
-          push-message "Plex Sort" "$my_push_message"
+          if [[ "$mui_push_message_dupe" == "" ]]; then                                                 ## MUI
+            mui_push_message_dupe="[ <b>DUPE SENT TO TRASH</b> ]\n\n<b>File:</b> $file_remove\n<b>Received: </b>$trash_file_date\n<b>Codec: </b>$trash_file_format\n<b>Resolution: </b>$trash_file_resolution\n<b>Duration: </b>$trash_file_duration"                ##
+          fi                                                                                        ##
+          source $my_language_file
+          my_message=` echo -e "$mui_push_message_dupe"`
+          push-message "Plex Sort" "$my_message"
         fi
         trash-put "$file_remove"
         new_media="1"
@@ -787,7 +804,7 @@ for folder in $filebot_folders ; do
   if [[ "$mui_cleaning_folder" == "" ]]; then                                               ## MUI
     mui_cleaning_folder="Cleaning $folder"                                                  ##
   fi                                                                                        ##
-  source $log_folder/MUI/$user_lang.lang
+  source $my_language_file
   echo -e "$ui_tag_ok $mui_cleaning_folder"
 done
 echo ""
@@ -810,7 +827,7 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
     if [[ "$mui_plex_service_ok" == "" ]]; then                                             ## MUI
       mui_plex_service_ok="Plex service is running (PID: $plex_pid)"                        ##
     fi                                                                                      ##
-    source $log_folder/MUI/$user_lang.lang
+    source $my_language_file
     $echo1 -e "$ui_tag_ok $mui_plex_service_ok" 2>/dev/null
   fi
   if [[ "$plex_token" == "" ]] || [[ "$plex_port" == "" ]]; then
@@ -820,7 +837,7 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
     if [[ "$mui_plex_token" == "" ]]; then                                                  ## MUI
       mui_plex_token="Plex Token: $plex_token_new"                                          ##
     fi                                                                                      ##
-    source $log_folder/MUI/$user_lang.lang
+    source $my_language_file
     echo -e "$ui_tag_ok $mui_plex_token"
     plex_port_new=`echo $sudo | sudo -kS cat "$plex_pref" 2>/dev/null | grep -o 'PortMappingPort[^ ]*' | cut -d'"' -f 2`
     if [[ "$plex_port_new" == "" ]]; then
@@ -834,14 +851,14 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
         if [[ "$mui_plex_scanning" == "" ]]; then                                           ## MUI
           mui_plex_scanning="Scanning ports to find Plex: $i"                               ##
         fi                                                                                  ##
-        source $log_folder/MUI/$user_lang.lang
+        source $my_language_file
         printf "\r$ui_tag_warning $mui_plex_scanning"
         if [[ "$check_plex_on_port" != "" ]]; then
           printf "$mon_printf" && printf "\r"
           if [[ "$mui_plex_port_found" == "" ]]; then                                       ## MUI
             mui_plex_port_found="Plex port found: $i"                                       ##
           fi                                                                                ##
-          source $log_folder/MUI/$user_lang.lang
+          source $my_language_file
           echo -e "$ui_tag_ok $mui_plex_port_found"
           plex_port_new=$i
           tput cnorm
@@ -854,7 +871,7 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
     if [[ "$mui_plex_port" == "" ]]; then                                                   ## MUI
       mui_plex_port="Plex Port: $plex_port_new"                                             ##
     fi                                                                                      ##
-    source $log_folder/MUI/$user_lang.lang
+    source $my_language_file
     echo -e "$ui_tag_ok $mui_plex_port"
   fi
   if [[ "$new_media" == "1" ]]; then

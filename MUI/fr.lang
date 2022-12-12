@@ -72,3 +72,8 @@ mui_plex_port_found="Port de Plex trouvé: $i"
 mui_plex_port="Port du Plex: $plex_port_new"
 mui_plex_update="Mise à jour de la librairie de Plex"
 mui_plex_no_update="Aucune mise à jour requise"
+
+## Push Messages
+mui_push_message_dupe="[ <b>DOUBLON ENVOYÉ À LA CORBEILLE</b> ]\n\n<b>Fichier:</b> $file_remove\n<b>Reçu le: </b>$trash_file_date\n<b>Codec: </b>$trash_file_format\n<b>Résolution: </b>$trash_file_resolution\n<b>Durée: </b>$trash_file_duration"
+mui_push_message_move="[ <b>MÉDIA DÉPLACÉ</b> ] [ <b>$target_conf</b> ]\n\n<b>Nom de la source: </b>$file_source\n<b>Nom de la cible: </b>$file_target\n\n<b>Destination: </b>$target_folder"
+mui_push_message_download_full="[ <b>DISQUE PLEIN</b> ]\n\nIl reste moins de 50Go sur le disque qui contient les téléchargements"
