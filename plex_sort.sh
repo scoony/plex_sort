@@ -2,7 +2,7 @@
 
 
 #######################
-## Attempt to fix printf special char issue
+## Fix printf special char issue
 Lengh1="55"
 Lengh2="61"
 lon() ( echo $(( Lengh1 + $(wc -c <<<"$1") - $(wc -m <<<"$1") )) )
@@ -489,8 +489,8 @@ if [[ "$overall_download_free" -le "50000000" ]]; then
     mui_download_free="Not enough space in download folders (less then 50G)"                ##
   fi                                                                                        ##
   echo -e "$ui_tag_bad $mui_download_free"
-  if [[ "$mui_push_message_download_full" == "" ]]; then                                                 ## MUI
-    mui_push_message_download_full="[ <b>DISK FULL</b> ]\n\nThere is less then 50Gb in the download hard drive"                ##
+  if [[ "$mui_push_message_download_full" == "" ]]; then                                    ## MUI
+    mui_push_message_download_full="[ <b>DISK FULL</b> ]\n\nThere is less then 50Gb in the download hard drive" ##
   fi                                                                                        ##
   my_message=` echo -e "$mui_push_message_download_full"`
   push-message "Plex Sort" "$my_message" "1"
@@ -632,9 +632,9 @@ for folder in $filebot_folders ; do
               file_source=`basename "$move_source"`
               file_target=`basename "$move_target"`
               target_folder=`dirname "$move_target"`
-              if [[ "$mui_push_message_move" == "" ]]; then                                                 ## MUI
-                mui_push_message_move="[ <b>MEDIA MOVED</b> ] [ <b>$target_conf</b> ]\n\n<b>Source Name: </b>$file_source\n<b>Target Name: </b>$file_target\n\n<b>Destination: </b>$target_folder"                ##
-              fi                                                                                        ##
+              if [[ "$mui_push_message_move" == "" ]]; then                                 ## MUI
+                mui_push_message_move="[ <b>MEDIA MOVED</b> ] [ <b>$target_conf</b> ]\n\n<b>Source Name: </b>$file_source\n<b>Target Name: </b>$file_target\n\n<b>Destination: </b>$target_folder" ##
+              fi                                                                            ##
               source $my_language_file
               my_message=` echo -e "$mui_push_message_move"`
               push-message "Plex Sort" "$my_message"
@@ -763,9 +763,9 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
           trash_file_format=`mediainfo --Inform="Video;%Format%" "$file_remove"`
           trash_file_resolution=`mediainfo --Inform="Video;%Width% x %Height%" "$file_remove"`
           trash_file_duration=`mediainfo --Inform="Video;%Duration/String3%" "$file_remove"`
-          if [[ "$mui_push_message_dupe" == "" ]]; then                                                 ## MUI
-            mui_push_message_dupe="[ <b>DUPE SENT TO TRASH</b> ]\n\n<b>File:</b> $file_remove\n<b>Received: </b>$trash_file_date\n<b>Codec: </b>$trash_file_format\n<b>Resolution: </b>$trash_file_resolution\n<b>Duration: </b>$trash_file_duration"                ##
-          fi                                                                                        ##
+          if [[ "$mui_push_message_dupe" == "" ]]; then                                     ## MUI
+            mui_push_message_dupe="[ <b>DUPE SENT TO TRASH</b> ]\n\n<b>File:</b> $file_remove\n<b>Received: </b>$trash_file_date\n<b>Codec: </b>$trash_file_format\n<b>Resolution: </b>$trash_file_resolution\n<b>Duration: </b>$trash_file_duration" ##
+          fi                                                                                ##
           source $my_language_file
           my_message=` echo -e "$mui_push_message_dupe"`
           push-message "Plex Sort" "$my_message"
