@@ -15,9 +15,9 @@ while getopts hfcm:l:-: OPT; do
   fi
   case "$OPT" in
     h | help )
-            echo "Help for Plex-Sort"
+            echo -e "\033[1mPLEX SORT - help\033[0m"
             echo ""
-            echo "Usage : plex_sort.sh [option]"
+            echo "Usage : ./plex_sort.sh [option]"
             echo ""
             echo "Available options:"
             echo " -h or --help                            : this help menu"
@@ -28,8 +28,7 @@ while getopts hfcm:l:-: OPT; do
             exit 1
             ;;
     f | force-update )
-            echo "PLEX SORT - Force Update initiated"
-           ## echo "Do you really want to update [y/N]:"
+            echo -e "\033[1mPLEX SORT - Force Update initiated\033[0m"
             read -n 1 -p "Do you want to proceed [y/N]:" yn $force_update_check
             printf "\r                                                     "
             if [[ "${yn}" == @(y|Y) ]]; then
@@ -57,7 +56,7 @@ while getopts hfcm:l:-: OPT; do
             exit 1
             ;;
     c | cron-log )
-            echo "PLEX SORT - latest cron log"
+            echo -e "\033[1mPLEX SORT - latest cron log\033[0m"
             echo ""
             if [[ -f "/var/log/plex_sort.log" ]]; then
               date_log=`date -r "/var/log/plex_sort.log" `
@@ -70,7 +69,19 @@ while getopts hfcm:l:-: OPT; do
             exit 1
             ;;
     m | mode )    needs_arg; display_mode="$OPTARG" ;;
-    l | language )  needs_arg; display_language="$OPTARG" ;;
+    l | language )
+            needs_arg
+            display_language="$OPTARG"
+            language_supported=( "fr" "en" )
+            echo -e "\033[1mPLEX SORT - language override\033[0m"
+            echo
+            if [[ "${language_supported[@]}" =~ "$display_language" ]]; then
+              echo "Language selected : $display_language"
+            else
+              echo "Language $display_language not supported yet"
+              exit 1
+            fi
+            ;;
     ??* )          die "Illegal option --$OPT" ;;  # bad long option
     ? )            exit 2 ;;  # bad short option (error reported via getopts)
   esac
@@ -144,8 +155,12 @@ fi
 if [[ ! -d $log_folder/MUI ]]; then
   mkdir -p "$log_folder/MUI"
 fi
-user_lang=$(locale | grep "LANG=" | cut -d= -f2 | cut -d_ -f1)
-md5_lang_local=`md5sum $log_folder/MUI/$user_lang.lang | cut -f1 -d" " 2>/dev/null`
+if [[ "$display_language" == "" ]]; then
+  user_lang=$(locale | grep "LANG=" | cut -d= -f2 | cut -d_ -f1)
+else
+  user_lang=$display_language
+fi
+md5_lang_local=`md5sum $log_folder/MUI/$user_lang.lang 2>/dev/null | cut -f1 -d" " `
 md5_lang_remote=`curl -s https://raw.githubusercontent.com/scoony/plex_sort/main/MUI/$user_lang.lang | md5sum | cut -f1 -d" "`
 if [[ ! -f $log_folder/MUI/$user_lang.lang ]] || [[ "$md5_lang_local" != "$md5_lang_remote" ]]; then
   if [[ "$mui_lang_updated" == "" ]]; then                                                  ## MUI
