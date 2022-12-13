@@ -2,6 +2,61 @@
 
 
 #######################
+## Advanced command arguments
+die() { echo "$*" >&2; exit 2; }  # complain to STDERR and exit with error
+needs_arg() { if [ -z "$OPTARG" ]; then die "No arg for --$OPT option"; fi; }
+
+while getopts hfm:l:-: OPT; do
+  # support long options: https://stackoverflow.com/a/28466267/519360
+  if [ "$OPT" = "-" ]; then   # long option: reformulate OPT and OPTARG
+    OPT="${OPTARG%%=*}"       # extract long option name
+    OPTARG="${OPTARG#$OPT}"   # extract long option argument (may be empty)
+    OPTARG="${OPTARG#=}"      # if long option argument, remove assigning `=`
+  fi
+  case "$OPT" in
+    h | help )
+            echo "Help for Plex-Sort"
+            echo ""
+            echo "Usage : plex_sort.sh [option]"
+            echo ""
+            echo "Available options:"
+            echo " -h or --help                            : this help menu"
+            echo " -f or --force-update                    : update this script"
+            echo " -m [value] or --mode=[value]            : change display mode (full)"
+            echo " -l [value] or --language=[value]        : override language (fr or en)"
+            exit 1
+            ;;
+    f | force-update )
+            echo "PLEX SORT - Force Update initiated"
+           ## echo "Do you really want to update [y/N]:"
+            read -n 1 -p "Do you want to proceed [y/N]:" yn $force_update_check
+            printf "\r                                                     "
+            if [[ "${yn}" == @(y|Y) ]]; then
+              echo ""
+              this_script=$(realpath -s "$0")
+              echo "Script location : "$this_script
+              script_remote="https://raw.githubusercontent.com/scoony/plex_sort/main/plex_sort.sh"
+              if curl -m 2 --head --silent --fail "$script_remote" 2>/dev/null >/dev/null; then
+                echo "Script available online on GitHub "
+##                echo "Script location : "$script_remote
+##                curl -s -m 3 --create-dir -o "$this_script" "$script_remote"
+                echo "Update completed... exit"
+              else
+                echo "Script offline"
+              fi
+            fi
+            exit 1
+            ;;
+    m | mode )    needs_arg; display_mode="$OPTARG" ;;
+    l | language )  needs_arg; display_language="$OPTARG" ;;
+    ??* )          die "Illegal option --$OPT" ;;  # bad long option
+    ? )            exit 2 ;;  # bad short option (error reported via getopts)
+  esac
+done
+shift $((OPTIND-1)) # remove parsed options and args from $@ list
+
+
+#######################
 ## Fix printf special char issue
 Lengh1="55"
 Lengh2="61"
@@ -278,7 +333,7 @@ else
     fi                                                                                      ##
     printf '"$mui_root_question"'
     read user_pass
-    echo $user_pass
+##    echo $user_pass
     if [[ "$user_pass" != "" ]]; then
       echo "sudo=\"$user_pass\"" >> $my_config
       sudo=$user_pass
