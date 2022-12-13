@@ -6,7 +6,7 @@
 die() { echo "$*" >&2; exit 2; }  # complain to STDERR and exit with error
 needs_arg() { if [ -z "$OPTARG" ]; then die "No arg for --$OPT option"; fi; }
 
-while getopts hfm:l:-: OPT; do
+while getopts hfcm:l:-: OPT; do
   # support long options: https://stackoverflow.com/a/28466267/519360
   if [ "$OPT" = "-" ]; then   # long option: reformulate OPT and OPTARG
     OPT="${OPTARG%%=*}"       # extract long option name
@@ -24,6 +24,7 @@ while getopts hfm:l:-: OPT; do
             echo " -f or --force-update                    : update this script"
             echo " -m [value] or --mode=[value]            : change display mode (full)"
             echo " -l [value] or --language=[value]        : override language (fr or en)"
+            echo " -c or --cron-log                        : display latest cron log"
             exit 1
             ;;
     f | force-update )
@@ -44,6 +45,19 @@ while getopts hfm:l:-: OPT; do
               else
                 echo "Script offline"
               fi
+            fi
+            exit 1
+            ;;
+    c | cron-log )
+            echo "PLEX SORT - latest cron log"
+            echo ""
+            if [[ -f "/var/log/plex_sort.log" ]]; then
+              date_log=`date -r "/var/log/plex_sort.log" `
+              cat "/var/log/plex_sort.log"
+              echo ""
+              echo "Log created : "$date_log
+            else
+              echo "No log found"
             fi
             exit 1
             ;;
