@@ -20,7 +20,7 @@ while getopts ehfcm:l:-: OPT; do
             echo "Usage : ./plex_sort.sh [option]"
             echo ""
             echo "Available options:"
-            echo "[value*] means optional arguments"
+            echo "[value*] means optional argument"
             echo ""
             echo " -h or --help                              : this help menu"
             echo " -f or --force-update                      : update this script"
