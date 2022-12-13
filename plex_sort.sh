@@ -25,7 +25,7 @@ while getopts hfcm:l:-: OPT; do
             echo " -m [value] or --mode=[value]            : change display mode (full)"
             echo " -l [value] or --language=[value]        : override language (fr or en)"
             echo " -c or --cron-log                        : display latest cron log"
-            exit 1
+            exit 0
             ;;
     f | force-update )
             echo -e "\033[1mPLEX SORT - Force Update initiated\033[0m"
@@ -53,7 +53,7 @@ while getopts hfcm:l:-: OPT; do
                 echo "Script offline"
               fi
             fi
-            exit 1
+            exit 0
             ;;
     c | cron-log )
             echo -e "\033[1mPLEX SORT - latest cron log\033[0m"
@@ -66,7 +66,7 @@ while getopts hfcm:l:-: OPT; do
             else
               echo "No log found"
             fi
-            exit 1
+            exit 0
             ;;
     m | mode )
             needs_arg
@@ -78,7 +78,7 @@ while getopts hfcm:l:-: OPT; do
               echo "Display mode activated: $arg_display_mode"
             else
               echo "Display mode $arg_display_mode not supported yet"
-              exit 1
+              exit 0
             fi
             ;;
     l | language )
@@ -91,7 +91,7 @@ while getopts hfcm:l:-: OPT; do
               echo "Language selected : $display_language"
             else
               echo "Language $display_language not supported yet"
-              exit 1
+              exit 0
             fi
             ;;
     ??* )          die "Illegal option --$OPT" ;;  # bad long option
