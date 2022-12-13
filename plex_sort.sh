@@ -66,13 +66,13 @@ lon2() ( echo $(( Lengh2 + $(wc -c <<<"$1") - $(wc -m <<<"$1") )) )
 
 #######################
 ## Update Only
-if [[ "$@" =~ "--force-update" ]]; then
-  echo "PLEX SORT: Force update"
-  echo "Script will be overwrited in /opt/script"
-  curl -s -m 3 --create-dir -o "/opt/scripts/plex_sort.sh" "https://raw.githubusercontent.com/scoony/plex_sort/main/plex_sort.sh"
-  echo "Process completed... exit"
-  exit 1
-fi
+##if [[ "$@" =~ "--force-update" ]]; then
+##  echo "PLEX SORT: Force update"
+##  echo "Script will be overwrited in /opt/script"
+##  curl -s -m 3 --create-dir -o "/opt/scripts/plex_sort.sh" "https://raw.githubusercontent.com/scoony/plex_sort/main/plex_sort.sh"
+##  echo "Process completed... exit"
+##  exit 1
+##fi
 
 
 printf "\e[46m\u23E5\u23E5   \e[0m \e[46m \e[1m %-61s  \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "PLEX SORT"
