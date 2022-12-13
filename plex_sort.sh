@@ -6,7 +6,7 @@
 die() { echo "$*" >&2; exit 2; }  # complain to STDERR and exit with error
 needs_arg() { if [ -z "$OPTARG" ]; then die "No arg for --$OPT option"; fi; }
 
-while getopts ehfcm:l:-: OPT; do
+while getopts eshfcm:l:-: OPT; do
   # support long options: https://stackoverflow.com/a/28466267/519360
   if [ "$OPT" = "-" ]; then   # long option: reformulate OPT and OPTARG
     OPT="${OPTARG%%=*}"       # extract long option name
@@ -28,6 +28,7 @@ while getopts ehfcm:l:-: OPT; do
             echo " -l [value] or --language=[value]          : override language (fr or en)"
             echo " -c or --cron-log                          : display latest cron log"
             echo " -e [value*] or --edit-config=[value*]     : edit config file (default: nano)"
+            echo " -s [value*] or --status=[value*]          : status/enable/disable the script"
             exit 0
             ;;
     f | force-update )
@@ -116,6 +117,50 @@ while getopts ehfcm:l:-: OPT; do
               fi
               exit 0
             fi
+            ;;
+    s | status )
+            echo -e "\033[1mPLEX SORT - status (cron)\033[0m"
+            echo ""
+            eval next_arg=\${$OPTIND}
+            if [[ "$next_arg" == @(|status) ]]; then
+              echo "Checking scheduler status..."
+              crontab -l > $HOME/my_old_cron.txt
+              cron_check=`cat $HOME/my_old_cron.txt | grep plex_sort`
+              if [[ "$cron_check" != "" ]]; then
+                echo "- script was added in the cron"
+                cron_status=`cat $HOME/my_old_cron.txt | grep plex_sort | grep "^#"`
+                if [[ "$cron_status" == "" ]]; then
+                  echo "- script is currently enabled"
+                else
+                  echo "- script is currently disabled"
+                fi
+              else
+                echo "- script wasn't added in the cron"
+              fi
+            elif [[ "$next_arg" == "enable" ]]; then
+              echo "Enabling the script in the cron"
+              crontab -l > $HOME/my_old_cron.txt
+  safety_check=`cat $HOME/my_old_cron.txt | grep plex_sort | grep "^#"`
+              if [[ "$safety_check" != "" ]]; then
+                cat $HOME/my_old_cron.txt | grep plex_sort | sed  's/^#//' > $HOME/my_new_cron.txt
+                crontab $HOME/my_new_cron.txt
+              else
+                echo "Script is already enabled"
+              fi
+            elif [[ "$next_arg" == "disable" ]]; then
+              echo "Disabling the script in the cron"
+              crontab -l > $HOME/my_old_cron.txt
+              safety_check=`cat $HOME/my_old_cron.txt | grep plex_sort | grep "^#"`
+              if [[ "$safety_check" == "" ]]; then
+                cat $HOME/my_old_cron.txt | grep plex_sort | sed 's/^/#/' > $HOME/my_new_cron.txt
+                crontab $HOME/my_new_cron.txt
+              else
+                echo "Script is already disabled"
+              fi
+            fi
+            rm $HOME/my_old_cron.txt 2>/dev/null
+            rm $HOME/my_new_cron.txt 2>/dev/null
+            exit 0
             ;;
     ??* )          die "Illegal option --$OPT" ;;  # bad long option
     ? )            exit 2 ;;  # bad short option (error reported via getopts)
