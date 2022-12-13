@@ -6,7 +6,7 @@
 die() { echo "$*" >&2; exit 2; }  # complain to STDERR and exit with error
 needs_arg() { if [ -z "$OPTARG" ]; then die "No arg for --$OPT option"; fi; }
 
-while getopts hfcm:l:-: OPT; do
+while getopts ehfcm:l:-: OPT; do
   # support long options: https://stackoverflow.com/a/28466267/519360
   if [ "$OPT" = "-" ]; then   # long option: reformulate OPT and OPTARG
     OPT="${OPTARG%%=*}"       # extract long option name
@@ -20,11 +20,14 @@ while getopts hfcm:l:-: OPT; do
             echo "Usage : ./plex_sort.sh [option]"
             echo ""
             echo "Available options:"
-            echo " -h or --help                            : this help menu"
-            echo " -f or --force-update                    : update this script"
-            echo " -m [value] or --mode=[value]            : change display mode (full)"
-            echo " -l [value] or --language=[value]        : override language (fr or en)"
-            echo " -c or --cron-log                        : display latest cron log"
+            echo "[value*] means optional arguments"
+            echo ""
+            echo " -h or --help                              : this help menu"
+            echo " -f or --force-update                      : update this script"
+            echo " -m [value] or --mode=[value]              : change display mode (full)"
+            echo " -l [value] or --language=[value]          : override language (fr or en)"
+            echo " -c or --cron-log                          : display latest cron log"
+            echo " -e [value*] or --edit-config=[value*]     : edit config file (default: nano)"
             exit 0
             ;;
     f | force-update )
@@ -91,6 +94,26 @@ while getopts hfcm:l:-: OPT; do
               echo "Language selected : $display_language"
             else
               echo "Language $display_language not supported yet"
+              exit 0
+            fi
+            ;;
+    e | edit-config )
+            eval next_arg=\${$OPTIND}
+            if [[ "$next_arg" == "" ]]; then
+              echo -e "\033[1mPLEX SORT - config editor\033[0m"
+              echo ""
+              echo "No editor specified, using default (nano)"
+              nano "$HOME/.config/plex_sort/plex_sort.conf"
+              exit 0
+            else
+              echo -e "\033[1mPLEX SORT - config editor\033[0m"
+              echo ""
+              if command -v $next_arg ; then
+                echo "Editing config with: $next_arg"
+                $next_arg "$HOME/.config/plex_sort/plex_sort.conf"
+              else
+                echo "There is no software called \"$next_arg\" installed"
+              fi
               exit 0
             fi
             ;;
