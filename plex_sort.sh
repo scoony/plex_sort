@@ -68,12 +68,24 @@ while getopts hfcm:l:-: OPT; do
             fi
             exit 1
             ;;
-    m | mode )    needs_arg; display_mode="$OPTARG" ;;
+    m | mode )
+            needs_arg
+            arg_display_mode="$OPTARG"
+            display_mode_supported=( "full" )
+            echo -e "\033[1mPLEX SORT - display mode override\033[0m"
+            echo ""
+            if [[ "${display_mode_supported[@]}" =~ "$arg_display_mode" ]]; then
+              echo "Display mode activated: $arg_display_mode"
+            else
+              echo "Display mode $arg_display_mode not supported yet"
+              exit 1
+            fi
+            ;;
     l | language )
             needs_arg
             display_language="$OPTARG"
             language_supported=( "fr" "en" )
-            echo -e "\033[1mPLEX SORT - language override\033[0m"
+            
             echo
             if [[ "${language_supported[@]}" =~ "$display_language" ]]; then
               echo "Language selected : $display_language"
@@ -144,7 +156,7 @@ source $HOME/.config/plex_sort/plex_sort.conf
 
 #######################
 ## Display Mode
-if [[ "$display_mode" == "full" ]] || [[ "$@" =~ "--mode-full" ]]; then
+if [[ "$display_mode" == "full" ]] || [[ "$arg_display_mode" =~ "full" ]]; then
   echo1="echo"
   printf1="printf"
 fi
