@@ -39,9 +39,17 @@ while getopts hfcm:l:-: OPT; do
               script_remote="https://raw.githubusercontent.com/scoony/plex_sort/main/plex_sort.sh"
               if curl -m 2 --head --silent --fail "$script_remote" 2>/dev/null >/dev/null; then
                 echo "Script available online on GitHub "
-##                echo "Script location : "$script_remote
-##                curl -s -m 3 --create-dir -o "$this_script" "$script_remote"
-                echo "Update completed... exit"
+                md5_local=`md5sum "$this_script" | cut -f1 -d" " 2>/dev/null`
+                md5_remote=`curl -s "$script_remote" | md5sum | cut -f1 -d" "`
+                echo "MD5 local  : "$md5_local
+                echo "MD5 remote : "$md5_remote
+                if [[ "$md5_local" != "$md5_remote" ]]; then
+                  echo "A new version of the script is available... downloading"
+                  curl -s -m 3 --create-dir -o "$this_script" "$script_remote"
+                  echo "Update completed... exit"
+                else
+                  echo "The script is up to date... exit"
+                fi
               else
                 echo "Script offline"
               fi
