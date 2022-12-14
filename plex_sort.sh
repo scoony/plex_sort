@@ -6,7 +6,7 @@
 die() { echo "$*" >&2; exit 2; }  # complain to STDERR and exit with error
 needs_arg() { if [ -z "$OPTARG" ]; then die "No arg for --$OPT option"; fi; }
 
-while getopts eshfcm:l:-: OPT; do
+while getopts eushf:cm:l:-: OPT; do
   # support long options: https://stackoverflow.com/a/28466267/519360
   if [ "$OPT" = "-" ]; then   # long option: reformulate OPT and OPTARG
     OPT="${OPTARG%%=*}"       # extract long option name
@@ -23,16 +23,42 @@ while getopts eshfcm:l:-: OPT; do
             echo "[value*] means optional argument"
             echo ""
             echo " -h or --help                              : this help menu"
-            echo " -f or --force-update                      : update this script"
+            echo " -u or --update                            : update this script"
             echo " -m [value] or --mode=[value]              : change display mode (full)"
             echo " -l [value] or --language=[value]          : override language (fr or en)"
             echo " -c or --cron-log                          : display latest cron log"
             echo " -e [value*] or --edit-config=[value*]     : edit config file (default: nano)"
             echo " -s [value*] or --status=[value*]          : status/enable/disable the script"
+            echo " -f \"[value]\" or --find=\"[value]\"          : find something in the logs"
             exit 0
             ;;
-    f | force-update )
-            echo -e "\033[1mPLEX SORT - Force Update initiated\033[0m"
+    f | find )
+            needs_arg
+            arg_search_value="$OPTARG"
+            echo -e "\033[1mPLEX SORT - find feature\033[0m"
+            echo "This feature require root privileges"
+            echo ""
+            echo "Checking for root privileges..."
+            source "$HOME/.config/plex_sort/plex_sort.conf" 2>/dev/null
+            if [[ "$sudo" == "" ]] && [[ "$EUID" != "0" ]]; then
+              echo "No root privileges... exit"
+            else
+              echo "Root privileges granted"
+            fi
+            echo "Updating db..."
+            echo "$sudo" | sudo -kS updatedb 2>/dev/null
+            logs_path=`echo "$sudo" | sudo -kS locate -r "/plex_sort/logs$" 2>/dev/null`
+            echo "Searching..."
+            for log_path in $logs_path ; do
+              my_logs=( `echo "$sudo" | sudo -kS find $log_path -type f 2>/dev/null` )
+              for my_log in ${my_logs[@]} ; do
+                echo "$sudo" | sudo -kS grep -Hin "$arg_search_value" $my_log 2>/dev/null
+              done
+            done
+            exit 0
+            ;;
+    u | update )
+            echo -e "\033[1mPLEX SORT - Update initiated\033[0m"
             read -n 1 -p "Do you want to proceed [y/N]:" yn $force_update_check
             printf "\r                                                     "
             if [[ "${yn}" == @(y|Y) ]]; then
