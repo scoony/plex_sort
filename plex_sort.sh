@@ -115,7 +115,6 @@ while getopts eushf:cm:l:-: OPT; do
             needs_arg
             display_language="$OPTARG"
             language_supported=( "fr" "en" )
-            
             echo
             if [[ "${language_supported[@]}" =~ "$display_language" ]]; then
               echo "Language selected : $display_language"
@@ -166,7 +165,7 @@ while getopts eushf:cm:l:-: OPT; do
             elif [[ "$next_arg" == "enable" ]]; then
               echo "Enabling the script in the cron"
               crontab -l > $HOME/my_old_cron.txt
-  safety_check=`cat $HOME/my_old_cron.txt | grep plex_sort | grep "^#"`
+              safety_check=`cat $HOME/my_old_cron.txt | grep plex_sort | grep "^#"`
               if [[ "$safety_check" != "" ]]; then
                 cat $HOME/my_old_cron.txt | grep plex_sort | sed  's/^#//' > $HOME/my_new_cron.txt
                 crontab $HOME/my_new_cron.txt
@@ -201,17 +200,6 @@ Lengh1="55"
 Lengh2="61"
 lon() ( echo $(( Lengh1 + $(wc -c <<<"$1") - $(wc -m <<<"$1") )) )
 lon2() ( echo $(( Lengh2 + $(wc -c <<<"$1") - $(wc -m <<<"$1") )) )
-
-
-#######################
-## Update Only
-##if [[ "$@" =~ "--force-update" ]]; then
-##  echo "PLEX SORT: Force update"
-##  echo "Script will be overwrited in /opt/script"
-##  curl -s -m 3 --create-dir -o "/opt/scripts/plex_sort.sh" "https://raw.githubusercontent.com/scoony/plex_sort/main/plex_sort.sh"
-##  echo "Process completed... exit"
-##  exit 1
-##fi
 
 
 printf "\e[46m\u23E5\u23E5   \e[0m \e[46m \e[1m %-61s  \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" "PLEX SORT"
@@ -476,7 +464,6 @@ else
     fi                                                                                      ##
     printf '"$mui_root_question"'
     read user_pass
-##    echo $user_pass
     if [[ "$user_pass" != "" ]]; then
       echo "sudo=\"$user_pass\"" >> $my_config
       sudo=$user_pass
@@ -737,7 +724,6 @@ done
 space_required=`cat $log_folder/temp.log | paste -sd+ - | bc`
 space_required_human=`cat $log_folder/temp.log | paste -sd+ - | bc | numfmt --to=iec --from-unit=K`
 rm $log_folder/temp.log
-##echo ""
 if [[ "$mui_download_df_required" == "" ]]; then                                            ## MUI
   mui_download_df_required="Space required to store content: $space_required_human"         ##
 fi                                                                                          ##
@@ -797,8 +783,6 @@ for folder in $filebot_folders ; do
         mkdir -p "$log_folder/logs/$folder_date"
         timestamp=`date +%H-%M-%S`
         filebot -script fn:amc -non-strict --conflict override --lang $filebot_language --encoding UTF-8 --action move "$source_folder_path" --def "$format=$output" --output "$target_folder_path" 2>/dev/null > $log_folder/logs/$folder_date/$timestamp-$folder.txt & display_loading $!
-##        pid=$!
-##        display_in_progress $pid "$ui_tag_ok Process in progress"
         cat "$log_folder/logs/$folder_date/$timestamp-$folder.txt" | grep "\[MOVE\]" > $log_folder/move_done.txt
         filebot_moves=()
         while IFS= read -r -d $'\n'; do
@@ -806,9 +790,7 @@ for folder in $filebot_folders ; do
         done <$log_folder/move_done.txt
         rm $log_folder/move_done.txt
         if [[ "${filebot_moves[@]}" != "" ]]; then
-##          echo "DEBUG: Move detected"
           for move_done in "${filebot_moves[@]}"; do
-##            echo "DEBUG: $move_done"
             move_source=`echo "$move_done" |  grep -oP '(?<=from \[).*(?=\] to)'`
             move_target=`echo "$move_done" |  grep -oP '(?<=to \[).*(?=\]$)'`
             if [[ "$mui_sorting_file_found" == "" ]]; then                                  ## MUI
@@ -879,10 +861,7 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
     source $my_language_file
     $echo1 -e "$ui_tag_ok $mui_dupe_db" 2>/dev/null
     echo $sudo | sudo -kS updatedb -U "$folder_db" -o "$log_folder/$disk_db_id.locate.db" 2>/dev/null & display_loading $!
-##    pid=$!
-##    display_in_progress $pid "$ui_tag_ok Generating Plex content DBs"
   done
-##  echo -e "$ui_tag_ok Done"
   locate_dbs=`ls $log_folder/*.locate.db`
   locate_path=`echo $locate_dbs | sed 's/ /:/g'`
   echo $sudo | sudo -kS locate -d $locate_path: . 2>/dev/null > $log_folder/full_plex.txt                                                 ## dump the whole dbs in a single file
@@ -902,7 +881,6 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
   echo -e "$ui_tag_ok $mui_dupe_extracting"
   for i in "${my_files[@]}"; do
     basename "$i" >> $log_folder/files_only.txt ## remove paths
-    ## remove extension too slow: | rev | cut -f 2- -d '.' | rev
   done & display_loading $!
   rm $log_folder/full_plex_clean.txt
   rm $log_folder/full_plex.txt
@@ -994,11 +972,7 @@ filebot_folders=`ls "$download_folder" | grep -i "filebot"`
 for folder in $filebot_folders ; do
   folder_path=`echo $download_folder"/"$folder`
   find "$folder_path" -type f -not -iregex '.*\.\(mkv\|avi\|mp4\|m4v\|mpg\|divx\|ts\|ogm\)' -delete & display_loading $!
-##  pid=$!
-##  display_in_progress $pid "$ui_tag_ok Cleaning $folder"
   find "$folder_path" -not -path "$folder_path" -type d -empty -delete & display_loading $!
-##  pid=$!
-##  display_in_progress $pid "$ui_tag_ok Cleaning $folder"
   if [[ "$mui_cleaning_folder" == "" ]]; then                                               ## MUI
     mui_cleaning_folder="Cleaning $folder"                                                  ##
   fi                                                                                        ##
