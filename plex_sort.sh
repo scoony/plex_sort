@@ -233,7 +233,7 @@ if [[ ! -d "$HOME/.config/plex_sort/logs" ]]; then
   mkdir -p "$HOME/.config/plex_sort/logs"
 fi
 my_config="$HOME/.config/plex_sort/plex_sort.conf"
-source $HOME/.config/plex_sort/plex_sort.conf
+source $HOME/.config/plex_sort/plex_sort.conf 2>/dev/null
 
 
 #######################
