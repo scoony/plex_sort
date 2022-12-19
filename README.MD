@@ -1,3 +1,5 @@
+![script icon](https://github.com/scoony/plex_sort/raw/main/Icons/plex_sort.png)
+
 # plex_sort
 
 This script is designed to handle downloads, rename and store properly...
