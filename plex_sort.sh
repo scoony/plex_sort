@@ -80,6 +80,7 @@ while getopts eushf:cm:l:-: OPT; do
                   echo "The script is up to date... exit"
                 fi
               else
+                echo ""
                 echo "Script offline"
               fi
             fi
