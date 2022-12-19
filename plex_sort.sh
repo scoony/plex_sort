@@ -83,6 +83,9 @@ while getopts eushf:cm:l:-: OPT; do
                 echo ""
                 echo "Script offline"
               fi
+            else
+              echo ""
+              echo "Nothing was done"
             fi
             exit 0
             ;;
