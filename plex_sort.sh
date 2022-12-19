@@ -975,7 +975,7 @@ printf "$ui_tag_section" $(lon2 "$mui_cleaning_title") "$mui_cleaning_title"
 filebot_folders=`ls "$download_folder" | grep -i "filebot"`
 for folder in $filebot_folders ; do
   folder_path=`echo $download_folder"/"$folder`
-  find "$folder_path" -type f -not -iregex '.*\.\(mkv\|avi\|mp4\|m4v\|mpg\|divx\|ts\|ogm\)' -delete & display_loading $!
+  find "$folder_path" -type f -not -iregex '.*\.\(mkv$\|avi$\|mp4$\|m4v$\|mpg$\|divx$\|ts$\|ogm$\)' -delete & display_loading $!
   find "$folder_path" -not -path "$folder_path" -type d -empty -delete & display_loading $!
   if [[ "$mui_cleaning_folder" == "" ]]; then                                               ## MUI
     mui_cleaning_folder="Cleaning $folder"                                                  ##
