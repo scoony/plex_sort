@@ -779,10 +779,13 @@ for folder in $filebot_folders ; do
     $echo1 -e "$ui_tag_ok $mui_sorting_agent" 2>/dev/null
     allow_agent=${!agent}
     if [[ "$allow_agent" != "1" ]]; then
-      folder_files=`find "$source_folder_path" -type f -iname '*[avi|mp4|mkv]' > $log_folder/$folder.medias.log`
+      folder_files=`find "$source_folder_path" -type f -iregex '.*\.\(mkv$\|avi$\|mp4$\|m4v$\|mpg$\|divx$\|ts$\|ogm$\)'` > $log_folder/$folder.medias.log
+##      echo "DEBUG: source_folder_path: "$source_folder_path
+##      echo "DEBUG: folder_files: "$folder_files
+##      find "$source_folder_path" -type f -iregex '.*\.\(mkv$\|avi$\|mp4$\|m4v$\|mpg$\|divx$\|ts$\|ogm$\)'
       ## PEUT ETRE CHERCHER AUTRES EXTENSIONS
-      check_medias=`cat $log_folder/$folder.medias.log`
-      if [[ "$check_medias" != "" ]]; then
+##      check_medias=`cat $log_folder/$folder.medias.log`
+      if [[ "$folder_files" != "" ]]; then
         folder_date=`date +%Y-%m-%d`
         mkdir -p "$log_folder/logs/$folder_date"
         timestamp=`date +%H-%M-%S`
@@ -913,49 +916,57 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
     for j in "${my_dupes[@]}"; do
       my_dupe_file=`echo $j | awk '{for (i=2; i<=NF; i++) printf $i FS}'`
       echo $sudo | sudo -kS locate -i -d $locate_path: $my_dupe_file 2>/dev/null > $log_folder/current_dupe.txt                           ## locate dupes
-      this_dupe=()
-      while IFS= read -r -d $'\n'; do
-      this_dupe+=("$REPLY")
-      done <$log_folder/current_dupe.txt
-      rm $log_folder/current_dupe.txt
-      for k in "${this_dupe[@]}"; do                                                                                                      ## collect infos on each dupe
-        date_file=`date -r "$k" "+%Y-%m-%d"`
-        echo "$date_file ¤$k¤" >> $log_folder/current_process.txt
-        if [[ "$mui_dupe_file" == "" ]]; then                                               ## MUI
-          mui_dupe_file="Dupe Found: $k Date: $date_file"                                   ##
-        fi                                                                                  ##
-        source $my_language_file
-        echo -e "$ui_tag_warning $mui_dupe_file"
-      done
-      file_remove=`sort $log_folder/current_process.txt | head -n1 | grep -oP '(?<=¤).*(?=¤)'`
-      if [[ "$file_remove" != "" ]]; then
-        folder_date=`date +%Y-%m-%d`
-        mkdir -p "$log_folder/logs/$folder_date"
-        timestamp=`date +%H-%M-%S`
-        echo "File sent to the trash:  $file_remove" > $log_folder/logs/$folder_date/$timestamp-dupe.txt 
-        if [[ "$mui_dupe_trash" == "" ]]; then                                              ## MUI
-          mui_dupe_trash="File sent to trash: $file_remove"                                 ##
-        fi                                                                                  ##
-        source $my_language_file
-        echo -e "$ui_tag_ok $mui_dupe_trash"
-        if [[ "$push_for_cleaning" == "yes" ]]; then
-          trash_file_date=`date -r "$file_remove" "+%d/%m/%Y"`
-          trash_file_format=`mediainfo --Inform="Video;%Format%" "$file_remove"`
-          trash_file_resolution=`mediainfo --Inform="Video;%Width% x %Height%" "$file_remove"`
-          trash_file_duration=`mediainfo --Inform="Video;%Duration/String3%" "$file_remove"`
-          if [[ "$mui_push_message_dupe" == "" ]]; then                                     ## MUI
-            mui_push_message_dupe="[ <b>DUPE SENT TO TRASH</b> ]\n\n<b>File:</b> $file_remove\n<b>Received: </b>$trash_file_date\n<b>Codec: </b>$trash_file_format\n<b>Resolution: </b>$trash_file_resolution\n<b>Duration: </b>$trash_file_duration" ##
-          fi                                                                                ##
+
+      double_check=`cat "$log_folder/current_dupe.txt" | wc -l`
+      if [[ "$double_check" -ge "2" ]]; then
+        this_dupe=()
+        while IFS= read -r -d $'\n'; do
+        this_dupe+=("$REPLY")
+        done <$log_folder/current_dupe.txt
+        rm $log_folder/current_dupe.txt
+        for k in "${this_dupe[@]}"; do                                                                                                      ## collect infos on each dupe
+          date_file=`date -r "$k" "+%Y-%m-%d"`
+          echo "$date_file ¤$k¤" >> $log_folder/current_process.txt
+          if [[ "$mui_dupe_file" == "" ]]; then                                               ## MUI
+            mui_dupe_file="Dupe Found: $k Date: $date_file"                                   ##
+          fi                                                                                  ##
           source $my_language_file
-          my_message=` echo -e "$mui_push_message_dupe"`
-          push-message "Plex Sort" "$my_message"
+          echo -e "$ui_tag_warning $mui_dupe_file"
+        done
+        file_remove=`sort $log_folder/current_process.txt | head -n1 | grep -oP '(?<=¤).*(?=¤)'`
+        if [[ "$file_remove" != "" ]]; then
+          folder_date=`date +%Y-%m-%d`
+          mkdir -p "$log_folder/logs/$folder_date"
+          timestamp=`date +%H-%M-%S`
+          echo "File sent to the trash:  $file_remove" > $log_folder/logs/$folder_date/$timestamp-dupe.txt 
+          if [[ "$mui_dupe_trash" == "" ]]; then                                              ## MUI
+            mui_dupe_trash="File sent to trash: $file_remove"                                 ##
+          fi                                                                                  ##
+          source $my_language_file
+          echo -e "$ui_tag_ok $mui_dupe_trash"
+          if [[ "$push_for_cleaning" == "yes" ]]; then
+            trash_file_date=`date -r "$file_remove" "+%d/%m/%Y"`
+            trash_file_format=`mediainfo --Inform="Video;%Format%" "$file_remove"`
+            trash_file_resolution=`mediainfo --Inform="Video;%Width% x %Height%" "$file_remove"`
+            trash_file_duration=`mediainfo --Inform="Video;%Duration/String3%" "$file_remove"`
+            if [[ "$mui_push_message_dupe" == "" ]]; then                                     ## MUI
+              mui_push_message_dupe="[ <b>DUPE SENT TO TRASH</b> ]\n\n<b>File:</b> $file_remove\n<b>Received: </b>$trash_file_date\n<b>Codec: </b>$trash_file_format\n<b>Resolution: </b>$trash_file_resolution\n<b>Duration: </b>$trash_file_duration" ##
+            fi                                                                                ##
+            source $my_language_file
+            my_message=` echo -e "$mui_push_message_dupe"`
+            push-message "Plex Sort" "$my_message"
+          fi
+          trash-put "$file_remove"
+          new_media="1"
         fi
-        trash-put "$file_remove"
-        new_media="1"
+        rm $log_folder/current_process.txt
+        echo -e "$ui_tag_warning......"
+      else
+## No dupes even if script found some
+        echo -e "$ui_tag_bad Critical error 02"
+        push-message "Plex Sort" "Critical error"
       fi
-      rm $log_folder/current_process.txt
-      echo -e "$ui_tag_warning......"
-    done
+    done 
   else
     if [[ "$mui_dupe_nothing" == "" ]]; then                                                ## MUI
       mui_dupe_nothing="No dupes found"                                                     ##
