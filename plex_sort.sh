@@ -768,6 +768,11 @@ for folder in $filebot_folders ; do
       format="movieFormat"
       output="{n} ({y})"
       force_mode="--def ut_label=movie "
+    elif [[ "${folder,,}" =~ "anime" ]] || [[ "${folder,,}" =~ "animation" ]] || [[ "${folder,,}" =~ "manga" ]]; then
+      agent="AniDB"
+      format="seriesFormat"
+      output="{n}/{'$filebot_season_folder '+s.pad(2)}/{n} - {sxe} - {t}"
+      force_mode="--def ut_label=anime "
     else
       agent="TheTVDB"
       format="seriesFormat"
