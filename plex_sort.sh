@@ -1083,3 +1083,8 @@ if ([[ ! -f $log_folder/.no-root ]] && [[ "$sudo" != "" ]]) || [[ "$native_sudo"
     echo -e "$ui_tag_ok $mui_plex_no_update"
   fi
 fi
+
+
+echo ""
+executed_date=$(date)
+printf "\e[46m\u23E5\u23E5   \e[0m \e[46m  %*s  \e[0m \e[46m  \e[0m \e[46m \e[0m \e[36m\u2759\e[0m\n" $(lon2 "$executed_date") "$executed_date"
