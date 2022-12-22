@@ -799,7 +799,7 @@ for folder in $filebot_folders ; do
         folder_date=`date +%Y-%m-%d`
         mkdir -p "$log_folder/logs/$folder_date"
         timestamp=`date +%H-%M-%S`
-        filebot -script fn:amc -non-strict --conflict override --lang $filebot_language --encoding UTF-8 $force_mode--action move "$source_folder_path" --def "$format=$output" --output "$target_folder_path" 2>/dev/null > $log_folder/logs/$folder_date/$timestamp-$folder.txt & display_loading $!
+        filebot -script fn:amc -non-strict --conflict override --lang $filebot_language --encoding UTF-8 $force_mode--action move "$source_folder_path" --def "$format=$output" --def minFileSize=0 --def minLengthMS=0 --output "$target_folder_path" 2>/dev/null > $log_folder/logs/$folder_date/$timestamp-$folder.txt & display_loading $!
         cat "$log_folder/logs/$folder_date/$timestamp-$folder.txt" | grep "\[MOVE\]" > $log_folder/move_done.txt
         filebot_moves=()
         while IFS= read -r -d $'\n'; do
