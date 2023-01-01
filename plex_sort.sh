@@ -769,17 +769,20 @@ for folder in $filebot_folders ; do
     if [[ "${folder,,}" =~ "film" ]] || [[ "${folder,,}" =~ "movie" ]]; then
       agent="TheMovieDB"
       format="movieFormat"
-      output="{n} ({y})"
+#      output="{n} ({y})"
+      output="{n.replace(\" : \", \" \")} ({y})"
       force_mode="--def ut_label=movie "
     elif [[ "${folder,,}" =~ "anime" ]] || [[ "${folder,,}" =~ "animation" ]] || [[ "${folder,,}" =~ "manga" ]]; then
       agent="AniDB"
       format="seriesFormat"
-      output="{n}/{'$filebot_season_folder '+s.pad(2)}/{n} - {sxe} - {t}"
+#      output="{n}/{'$filebot_season_folder '+s.pad(2)}/{n} - {sxe} - {t}"
+      output="{n.replace(\" : \", \" \")}/{'$filebot_season_folder '+s.pad(2)}/{n.replace(\" : \", \" \")} - {sxe} - {t}"
       force_mode="--def ut_label=anime "
     else
       agent="TheTVDB"
       format="seriesFormat"
-      output="{n}/{'$filebot_season_folder '+s.pad(2)}/{n} - {sxe} - {t}"
+#      output="{n}/{'$filebot_season_folder '+s.pad(2)}/{n} - {sxe} - {t}"
+      output="{n.replace(\" : \", \" \")}/{'$filebot_season_folder '+s.pad(2)}/{n.replace(\" : \", \" \")} - {sxe} - {t}"
       force_mode="--def ut_label=tv "
     fi
     if [[ "$mui_sorting_agent" == "" ]]; then                                               ## MUI
