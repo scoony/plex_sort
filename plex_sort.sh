@@ -799,47 +799,63 @@ for folder in $filebot_folders ; do
       ## PEUT ETRE CHERCHER AUTRES EXTENSIONS
 ##      check_medias=`cat $log_folder/$folder.medias.log`
       if [[ "$folder_files" != "" ]]; then
-        folder_date=`date +%Y-%m-%d`
-        mkdir -p "$log_folder/logs/$folder_date"
-        timestamp=`date +%H-%M-%S`
-        filebot -script fn:amc -non-strict --conflict override --lang $filebot_language --encoding UTF-8 $force_mode--action move "$source_folder_path" --def "$format=$output" --def minFileSize=0 --def minLengthMS=0 --output "$target_folder_path" 2>/dev/null > $log_folder/logs/$folder_date/$timestamp-$folder.txt & display_loading $!
-        cat "$log_folder/logs/$folder_date/$timestamp-$folder.txt" | grep "\[MOVE\]" > $log_folder/move_done.txt
-        filebot_moves=()
-        while IFS= read -r -d $'\n'; do
-        filebot_moves+=("$REPLY")
-        done <$log_folder/move_done.txt
-        rm $log_folder/move_done.txt
-        if [[ "${filebot_moves[@]}" != "" ]]; then
-          for move_done in "${filebot_moves[@]}"; do
-            move_source=`echo "$move_done" |  grep -oP '(?<=from \[).*(?=\] to)'`
-            move_target=`echo "$move_done" |  grep -oP '(?<=to \[).*(?=\]$)'`
-            if [[ "$mui_sorting_file_found" == "" ]]; then                                  ## MUI
-              mui_sorting_file_found="File processed:"                                      ##
-            fi                                                                              ##
-            echo -e "$ui_tag_ok $mui_sorting_file_found"
-            if [[ "$mui_sorting_source" == "" ]]; then                                      ## MUI
-              mui_sorting_source="Source: $move_source"                                     ##
-            fi                                                                              ##
-            source $my_language_file
-            echo -e "$ui_tag_processed $mui_sorting_source"
-            if [[ "$mui_sorting_target" == "" ]]; then                                      ## MUI
-              mui_sorting_target="Target: $move_target"                                     ##
-            fi                                                                              ##
-            source $my_language_file
-            echo -e "$ui_tag_processed $mui_sorting_target"
-            new_media="1"
-            if [[ "$push_for_move" == "yes" ]]; then
-              file_source=`basename "$move_source"`
-              file_target=`basename "$move_target"`
-              target_folder=`dirname "$move_target"`
-              if [[ "$mui_push_message_move" == "" ]]; then                                 ## MUI
-                mui_push_message_move="[ <b>MEDIA MOVED</b> ] [ <b>$target_conf</b> ]\n\n<b>Source Name: </b>$file_source\n<b>Target Name: </b>$file_target\n\n<b>Destination: </b>$target_folder" ##
-              fi                                                                            ##
+        filebot_processing() {
+          folder_date=`date +%Y-%m-%d`
+          mkdir -p "$log_folder/logs/$folder_date"
+          timestamp=`date +%H-%M-%S`
+          filebot -script fn:amc -non-strict --conflict override --lang $filebot_language --encoding UTF-8 $force_mode--action move "$source_folder_path" --def "$format=$output" --def minFileSize=0 --def minLengthMS=0 --output "$target_folder_path" 2>/dev/null > $log_folder/logs/$folder_date/$timestamp-$folder.txt & display_loading $!
+          cat "$log_folder/logs/$folder_date/$timestamp-$folder.txt" | grep "\[MOVE\]" > $log_folder/move_done.txt
+          filebot_moves=()
+          while IFS= read -r -d $'\n'; do
+          filebot_moves+=("$REPLY")
+          done <$log_folder/move_done.txt
+          rm $log_folder/move_done.txt
+          if [[ "${filebot_moves[@]}" != "" ]]; then
+            for move_done in "${filebot_moves[@]}"; do
+              move_source=`echo "$move_done" |  grep -oP '(?<=from \[).*(?=\] to)'`
+              move_target=`echo "$move_done" |  grep -oP '(?<=to \[).*(?=\]$)'`
+              if [[ "$mui_sorting_file_found" == "" ]]; then                                  ## MUI
+                mui_sorting_file_found="File processed:"                                      ##
+              fi                                                                              ##
+              echo -e "$ui_tag_ok $mui_sorting_file_found"
+              if [[ "$mui_sorting_source" == "" ]]; then                                      ## MUI
+                mui_sorting_source="Source: $move_source"                                     ##
+              fi                                                                              ##
               source $my_language_file
-              my_message=` echo -e "$mui_push_message_move"`
-              push-message "Plex Sort" "$my_message"
-            fi
-          done
+              echo -e "$ui_tag_processed $mui_sorting_source"
+              if [[ "$mui_sorting_target" == "" ]]; then                                      ## MUI
+                mui_sorting_target="Target: $move_target"                                     ##
+              fi                                                                              ##
+              source $my_language_file
+              echo -e "$ui_tag_processed $mui_sorting_target"
+              new_media="1"
+              if [[ "$push_for_move" == "yes" ]]; then
+                file_source=`basename "$move_source"`
+                file_target=`basename "$move_target"`
+                target_folder=`dirname "$move_target"`
+                if [[ "$mui_push_message_move" == "" ]]; then                                 ## MUI
+                  mui_push_message_move="[ <b>MEDIA MOVED</b> ] [ <b>$target_conf</b> ]\n\n<b>Source Name: </b>$file_source\n<b>Target Name: </b>$file_target\n\n<b>Destination: </b>$target_folder" ##
+                fi                                                                            ##
+                source $my_language_file
+                my_message=` echo -e "$mui_push_message_move"`
+                push-message "Plex Sort" "$my_message"
+              fi
+            done
+          fi
+        }
+        filebot_processing
+        if [[ "${folder,,}" =~ "anime" ]] || [[ "${folder,,}" =~ "animation" ]] || [[ "${folder,,}" =~ "manga" ]]; then
+          folder_files=`find "$source_folder_path" -type f -iregex '.*\.\(mkv$\|avi$\|mp4$\|m4v$\|mpg$\|divx$\|ts$\|ogm$\)'` > $log_folder/$folder.medias.log
+          if [[ "$folder_files" != "" ]]; then
+            agent="TheTVDB"
+            force_mode="--def ut_label=tv "
+            if [[ "$mui_sorting_agent" == "" ]]; then                                               ## MUI
+              mui_sorting_agent="Agent used: $agent"                                                ##
+            fi                                                                                      ##
+            source $my_language_file
+            $echo1 -e "$ui_tag_ok $mui_sorting_agent" 2>/dev/null
+            filebot_processing
+          fi
         fi
       fi
     else
